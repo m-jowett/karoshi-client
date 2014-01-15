@@ -1,1 +1,0 @@
-administrator ALL=(ALL:ALL)NOPASSWD:/usr/bin/karoshi-setup

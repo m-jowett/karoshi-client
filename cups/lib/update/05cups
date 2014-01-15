@@ -1,0 +1,57 @@
+#!/bin/bash
+# Process with Makefile
+
+#Copyright (C) 2013 Robin McCorkell
+
+#This file is part of Karoshi Client.
+#
+#Karoshi Client is free software: you can redistribute it and/or modify
+#it under the terms of the GNU Affero General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#Karoshi Client is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU Affero General Public License for more details.
+#
+#You should have received a copy of the GNU Affero General Public License
+#along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
+
+source "@sysconfdir@/karoshi/variables.core"
+
+####################
+#Refresh client information
+####################
+IFS=$'\n'
+[[ -f /tmp/netlogon/domain_information/print_server ]] && read -r -d $'\0' PRINTSERVER _ < /tmp/netlogon/domain_information/print_server
+unset IFS
+
+echo "PRINTSERVER=$PRINTSERVER" > "@sysconfdir@/karoshi/variables.cups"
+
+############################
+#Get printers
+############################
+[[ -d "@localstatedir@/lib/karoshi/cups" ]] || mkdir "@localstatedir@/lib/karoshi/cups"
+find "@localstatedir@/lib/karoshi/cups" -mindepth 1 -delete
+#Copy printer configuration
+if [[ $LOCATION ]] && [[ -f /tmp/netlogon/printers.txt ]]; then
+	all_printers=`grep ^$LOCATION, /tmp/netlogon/printers.txt`
+	if [[ $all_printers ]]; then
+		printer_count=`cut -d, -f2 <<< "$all_printers"`
+		default_printer=`cut -d, -f$(( printer_count + 3 )) <<< "$all_printers"`
+		echo $default_printer > "@localstatedir@/lib/karoshi/cups/list"
+		for (( i = 3; i < printer_count + 3; ++i )); do
+			printer=`cut -d, -f$i <<< "$all_printers"`
+			echo "Marking printer $printer to be configured"
+			if [[ $printer != $default_printer ]]; then
+				echo $printer >> "@localstatedir@/lib/karoshi/cups/list"
+			fi
+			#Copy PPD
+			[[ -f /tmp/netlogon/linuxclient/printer_drivers/$printer.ppd ]] && cp -f /tmp/netlogon/linuxclient/printer_drivers/$printer.ppd "@localstatedir@/lib/karoshi/cups/$printer.ppd"
+		done
+	fi
+fi
+
+#Update PPD files
+find "@localstatedir@/lib/karoshi/cups" -name '*.ppd' -type f -exec cups-genppdupdate {} +

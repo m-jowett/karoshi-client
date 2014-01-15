@@ -1,0 +1,75 @@
+#!/bin/bash
+# Process with Makefile
+
+#Copyright (C) 2013 Robin McCorkell
+
+#This file is part of Karoshi Client.
+#
+#Karoshi Client is free software: you can redistribute it and/or modify
+#it under the terms of the GNU Affero General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#Karoshi Client is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU Affero General Public License for more details.
+#
+#You should have received a copy of the GNU Affero General Public License
+#along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
+
+set -e
+
+[[ -d "@localstatedir@/lib/karoshi/thunderbird" ]]
+
+#######################
+#Thunderbird extensions
+#######################
+
+function do_xpi {
+	xpi_name=$(basename "$1")
+	xpi_name=${xpi_name%.xpi}
+
+	if [[ -z $xpi_name ]]; then
+		echo "Warning: Something bad happened" >&2
+		return
+	fi
+
+	mkdir "@localstatedir@/lib/karoshi/thunderbird/extensions/$xpi_name"
+	unzip -q "$1" -d "@localstatedir@/lib/karoshi/thunderbird/extensions/$xpi_name"
+
+	xpi_id=$(xmlstarlet sel -N rdf=http://www.w3.org/1999/02/22-rdf-syntax-ns# -N em=http://www.mozilla.org/2004/em-rdf# \
+				-t -m "//rdf:Description[@about='urn:mozilla:install-manifest']" -i "em:id" -v "em:id" --else -v "@em:id" \
+				"@localstatedir@/lib/karoshi/thunderbird/extensions/$xpi_name/install.rdf")
+	#Check if we actually have a valid extension id
+	if [[ -z $xpi_id ]]; then
+		echo "Warning: Thunderbird extension $xpi_name is invalid" >&2
+		return
+	fi
+
+	#Install extension
+	ln -Ts "@localstatedir@/lib/karoshi/thunderbird/extensions/$xpi_name" /usr/lib/mozilla/extensions/{3550f703-e582-4d05-9a08-453d09bdfdc6}/"$xpi_id"
+}
+
+#{3550f703-e582-4d05-9a08-453d09bdfdc6} is the app-id for Thunderbird
+[[ -d /usr/lib/mozilla/extensions/{3550f703-e582-4d05-9a08-453d09bdfdc6} ]] || mkdir -p /usr/lib/mozilla/extensions/{3550f703-e582-4d05-9a08-453d09bdfdc6}
+[[ -d "@localstatedir@/lib/karoshi/thunderbird/extensions" ]] || mkdir -p "@localstatedir@/lib/karoshi/thunderbird/extensions"
+
+#Clear all extensions
+find "@localstatedir@/lib/karoshi/thunderbird/extensions" -mindepth 1 -delete
+find /usr/lib/mozilla/extensions/{3550f703-e582-4d05-9a08-453d09bdfdc6} -maxdepth 1 -lname "@localstatedir@/lib/karoshi/thunderbird/extensions/\*" -delete
+
+if [[ -d /tmp/netlogon/client_settings/thunderbird/extensions ]]; then
+	#Global extensions
+	while read -r -d $'\0' xpi; do
+		echo "Found new global extension: $xpi"
+		do_xpi "$xpi"
+	done < <(find /tmp/netlogon/client_settings/thunderbird/extensions -maxdepth 1 -mindepth 1 -name '*.xpi' -print0)
+	#Linux-specific extensions
+	if [ -d /tmp/netlogon/client_settings/thunderbird/extensions/linux-$(uname -i) ]; then
+		while read -r -d $'\0' xpi; do
+			echo "Found new architecture extension: $xpi"
+			do_xpi "$xpi"
+		done < <(find /tmp/netlogon/client_settings/thunderbird/extensions/linux-$(uname -i) -maxdepth 1 -mindepth 1 -name '*.xpi' -print0)
+	fi
+fi

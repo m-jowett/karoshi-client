@@ -1,0 +1,43 @@
+#!/bin/bash
+# Process with Makefile
+
+#Copyright (C) 2013 Robin McCorkell
+
+#This file is part of Karoshi Client.
+#
+#Karoshi Client is free software: you can redistribute it and/or modify
+#it under the terms of the GNU Affero General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#Karoshi Client is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU Affero General Public License for more details.
+#
+#You should have received a copy of the GNU Affero General Public License
+#along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
+
+####################
+#Refresh client information
+####################
+IFS=$'\n'
+[[ -f /tmp/netlogon/domain_information/clientshutdowntime ]] && read -r -d $'\0' CLIENTSHUTDOWNTIME _ < /tmp/netlogon/domain_information/clientshutdowntime
+[[ -f /tmp/netlogon/domain_information/idletime ]] && read -r -d $'\0' IDLESHUTDOWNTIME _ < /tmp/netlogon/domain_information/idletime
+unset IFS
+
+###########################
+#Create cronjob to shut computer down
+###########################
+if [[ $CLIENTSHUTDOWNTIME ]]; then
+	echo "Setting auto shutdown time to $CLIENTSHUTDOWNTIME"
+	hours=`cut -d: -f1 <<< "$CLIENTSHUTDOWNTIME"`
+	minutes=`cut -d: -f2 <<< "$CLIENTSHUTDOWNTIME"`
+
+	if [[ $hours ]] && [[ $minutes ]]
+	then
+		crontab - << EOF
+$minutes $hours * * * karoshi-notify-shutdown
+EOF
+	fi
+fi

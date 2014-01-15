@@ -1,0 +1,29 @@
+#!/bin/bash
+# Process with Makefile
+
+#Copyright (C) 2013 Robin McCorkell
+
+#This file is part of Karoshi Client.
+#
+#Karoshi Client is free software: you can redistribute it and/or modify
+#it under the terms of the GNU Affero General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#Karoshi Client is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU Affero General Public License for more details.
+#
+#You should have received a copy of the GNU Affero General Public License
+#along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
+
+if $is_domain && [[ $alternate_home ]]; then
+	#Set default directory for terminal emulator and file manager to $alternate_home
+	[[ -d ~/.config/xfce4/xfconf/xfce-perchannel-xml ]] || mkdir -p ~/.config/xfce4/xfconf/xfce-perchannel-xml
+	cp -n /etc/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml ~/.config/xfce4/xfconf/xfce-perchannel-xml
+	sed -i 's@"exo-open --launch \(TerminalEmulator\|FileManager\)[^"]*"@"exo-open --launch \1 --working-directory '"'$alternate_home'"'"@' ~/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-keyboard-shortcuts.xml
+
+	cp -n /usr/share/applications/exo-terminal-emulator.desktop ~/.local/share/applications
+	sed -i 's@^Exec=exo-open --launch TerminalEmulator.*@Exec=exo-open --launch TerminalEmulator --working-directory '"'$alternate_home'"'@' ~/.local/share/applications/exo-terminal-emulator.desktop
+fi

@@ -1,8 +1,0 @@
-
-[Desktop Entry]
-Version=1.0
-Type=Application
-Terminal=false
-Exec=gksudo -D 'Karoshi Setup' karoshi-setup
-Name=Setup Client
-Icon=/opt/karoshi/linuxclientsetup/images/smalllogo.xpm

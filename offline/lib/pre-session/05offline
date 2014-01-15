@@ -1,0 +1,73 @@
+#!/bin/bash
+# Process with Makefile
+
+#Copyright (C) 2013 Robin McCorkell
+
+#This file is part of Karoshi Client.
+#
+#Karoshi Client is free software: you can redistribute it and/or modify
+#it under the terms of the GNU Affero General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#Karoshi Client is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU Affero General Public License for more details.
+#
+#You should have received a copy of the GNU Affero General Public License
+#along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
+
+touch ~/.gtk-bookmarks
+
+#Detect offline home area
+offline_home_exists=false
+if $is_domain && mountpoint -q ~/offline-home; then
+	offline_home_exists=true
+fi
+
+offline_home_escape=$(sed 's/ /%20/g' <<< ~/offline-home)
+#Delete references to offline-home in .gtk-bookmarks
+if grep -q "^file://$offline_home_escape " ~/.gtk-bookmarks && ! $offline_home_exists; then
+	sed -i "\@^file://$offline_home_escape @ d" ~/.gtk-bookmarks
+fi
+
+if $is_domain; then
+	if karoshi-manage-flags get offline_mode >/dev/null; then
+		if $offline_home_exists; then
+			alternate_home="offline-home"
+
+			create_entries "Home" ~/offline-home folder-home
+
+			#Add shortcut to offline-home in .gtk-bookmarks
+			if grep -q "^file://$offline_home_escape " ~/.gtk-bookmarks; then
+				sed -i "s@^file://$offline_home_escape .*@file://$offline_home_escape Home@" ~/.gtk-bookmarks
+			else
+				echo "file://$offline_home_escape Home" >> ~/.gtk-bookmarks
+			fi
+			if [[ ! -e ~/.config/karoshi/offline-home-seen ]]; then
+				if [[ -e "@datadir@/karoshi/offline/new-offline-user.desktop" ]]; then
+					cp -f "@datadir@/karoshi/offline/new-offline-user.desktop" ~/.config/autostart/karoshi-new-offline-user.desktop
+				fi
+				touch ~/.config/karoshi/offline-home-seen
+			fi
+		else
+			echo "WARNING: Unable to find offline home area" >&2
+			create_entries "Home" ~ folder-home
+		fi
+	else
+		if $offline_home_exists; then
+			create_entries "Offline Home" ~/offline-home folder-home
+
+			if grep -q "^file://$offline_home_escape " ~/.gtk-bookmarks; then
+				sed -i "s@^file://$offline_home_escape .*@file://$offline_home_escape Offline Home@" ~/.gtk-bookmarks
+			else
+				echo "file://$offline_home_escape Offline Home" >> ~/.gtk-bookmarks
+			fi
+			if [[ -e "@datadir@/karoshi/offline/online-merge.desktop" ]]; then
+				cp -f "@datadir@/karoshi/offline/online-merge.desktop" ~/.config/autostart/karoshi-online-merge.desktop
+			fi
+			[[ -e ~/.config/karoshi/offline-home-seen ]] && rm -f ~/.config/karoshi/offline-home-seen
+		fi
+	fi
+fi

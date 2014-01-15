@@ -1,0 +1,50 @@
+#!/bin/bash
+# Process with Makefile
+
+#Copyright (C) 2013 Robin McCorkell
+
+#This file is part of Karoshi Client.
+#
+#Karoshi Client is free software: you can redistribute it and/or modify
+#it under the terms of the GNU Affero General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#Karoshi Client is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU Affero General Public License for more details.
+#
+#You should have received a copy of the GNU Affero General Public License
+#along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
+
+set -e
+
+source "@sysconfdir@/karoshi/core/variables"
+source "@sysconfdir@/karoshi/cups/variables"
+
+#Remove all Karoshi-configured printers
+while read -r printer _; do
+	lpadmin -x $printer
+done < <("@sysconfdir@/karoshi/cups/printers")
+
+> "@sysconfdir@/karoshi/cups/printers"
+
+#Assign printers depending on the location
+if [[ $LOCATION ]] && [[ $PRINTSERVER ]] && [[ -f "@localstatedir@/lib/karoshi/cups/list" ]]; then
+	printerList=$(< "@localstatedir@/lib/karoshi/cups/list")
+	if [[ $printerList ]]; then
+		read -r defaultPrinter _ <<< "$printerList"
+		while read -r printer _; do
+			if [[ $DOMAINTYPE == samba3 ]]; then
+				lpadmin -p $printer -v smb://$PRINTSERVER.$DNSSUFFIX/$printer -L "$LOCATION" -D "$printer" -E
+			else
+				lpadmin -p $printer -v ksmb://$PRINTSERVER.$DNSSUFFIX/$printer -L "$LOCATION" -D "$printer" -E
+			fi
+			echo "$printer" >> "@sysconfdir@/karoshi/cups/printers"
+			#Copy PPD
+			[[ -f "@localstatedir@/lib/karoshi/cups/$printer.ppd" ]] && lpadmin -p $printer -P "@localstatedir@/lib/karoshi/cups/$printer.ppd"
+		done <<< "$printerList"
+		lpadmin -d $defaultPrinter
+	fi
+fi

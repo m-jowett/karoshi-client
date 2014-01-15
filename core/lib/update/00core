@@ -1,0 +1,241 @@
+#!/bin/bash
+# Process with Makefile
+
+#Copyright (C) 2013 Robin McCorkell
+
+#This file is part of Karoshi Client.
+#
+#Karoshi Client is free software: you can redistribute it and/or modify
+#it under the terms of the GNU Affero General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#Karoshi Client is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU Affero General Public License for more details.
+#
+#You should have received a copy of the GNU Affero General Public License
+#along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
+
+source "@sysconfdir@/karoshi/core/variables"
+
+#Force update time from server
+echo "Setting time from $PDC.$DNSSUFFIX"
+net time set -S $PDC.$DNSSUFFIX
+
+####################
+#Refresh client information
+####################
+echo "Retrieving client information"
+IFS=$'\n'
+[[ -f /tmp/netlogon/clients/$CLIENTMAC ]] && read -r -d $'\0' _ _ LOCATION _ < /tmp/netlogon/clients/$CLIENTMAC
+[[ -f /tmp/netlogon/domain_information/proxy_server ]] && read -r -d $'\0' PROXYSERVER _ < /tmp/netlogon/domain_information/proxy_server
+[[ -f /tmp/netlogon/domain_information/mail_server ]] && MAILSERVER=true
+unset IFS
+
+####################
+#Set apt settings through proxy
+####################
+if [[ $PROXYSERVER ]]; then
+	echo "Configuring APT proxy"
+	echo "Acquire::http::Proxy \"http://$PROXYSERVER.$DNSSUFFIX:8000/\";" > /etc/apt/apt.conf.d/01proxy
+fi
+
+####################
+#Domain specific stuff
+####################
+echo "Configuring pam_mount"
+[[ -e /etc/security/pam_mount.conf.xml ]] && rm -f /etc/security/pam_mount.conf.xml
+if ! karoshi-manage-flags get offline_mode >/dev/null; then
+	case "$DOMAINTYPE" in
+	samba4)
+		[[ -f /tmp/netlogon/linuxclient/pam_mount.conf.xml.krb5 ]] && cp -f /tmp/netlogon/linuxclient/pam_mount.conf.xml.krb5 /etc/security/pam_mount.conf.xml
+		;;
+	samba4_winbind)
+		[[ -f /tmp/netlogon/linuxclient/pam_mount.conf.xml.krb5 ]] && cp -f /tmp/netlogon/linuxclient/pam_mount.conf.xml.krb5 /etc/security/pam_mount.conf.xml
+		#Clear cache
+		find /var/cache/samba -mindepth 1 -delete
+		;;
+	samba3)
+		[[ -f /tmp/netlogon/linuxclient/pam_mount.conf.xml ]] && cp -f /tmp/netlogon/linuxclient/pam_mount.conf.xml /etc/security/pam_mount.conf.xml
+		#Clear cache
+		find /var/cache/samba -mindepth 1 -delete
+		;;
+	*)
+		echo "WARNING: Unrecognized domain type $DOMAINTYPE"
+		;;
+	esac
+fi
+if [[ ! -f /etc/security/pam_mount.conf.xml ]]; then
+	echo "WARNING: No pam_mount configuration file found"
+	cat > /etc/security/pam_mount.conf.xml << EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<pam_mount>
+
+</pam_mount>
+EOF
+fi
+
+#Add VirtualBox entry
+[[ -f /etc/security/pam_mount.conf.xml ]] && sed -i "\@</pam_mount>@ i\\
+<volume uid='1000-10000000' path='$KAROSHI_DATA/$KAROSHI_VIRTUALBOX/users/%(USER)' mountpoint='~/.VirtualBox' options='bind' />\\
+<volume uid='1000-10000000' path='$KAROSHI_DATA/$KAROSHI_VIRTUALBOX/users/%(USER)' mountpoint='~/VirtualBox VMs' options='bind' />" /etc/security/pam_mount.conf.xml
+
+#################
+#Home areas
+#################
+#tmpfs auto mount
+#[[ -f /etc/security/pam_mount.conf.xml ]] && sed -i "0,/[[:blank:]]*<volume/s@@<volume options=\"size=100m,uid=%(USERUID),gid=%(USERGID),mode=0700\" mountpoint=\"~\" uid=\"1000-50000\" fstype=\"tmpfs\" />\n<volume@" /etc/security/pam_mount.conf.xml
+
+#Clear home areas
+echo "Clearing /home"
+find /home -mindepth 1 -xdev -delete
+
+####################
+#Copy configuration
+####################
+#Do skel (properly)
+if [[ -f /tmp/netlogon/linuxclient/$LINUX_VERSION/skel.tar.gz ]]; then
+	echo "Found new skel - replacing existing one"
+	[[ -e /etc/skel ]] && rm -rf /etc/skel
+	tar -x -C /etc -f /tmp/netlogon/linuxclient/$LINUX_VERSION/skel.tar.gz
+fi
+#/etc/skel should be readable by all, and directories should be 755
+chown -R root:root /etc/skel
+chmod -R +r /etc/skel
+find /etc/skel -type d -print0 | xargs -r0 chmod 755
+
+#Version agnostic configuration
+echo "Copying other files"
+#Background images
+[[ -d $KAROSHI_DATA/images ]] || mkdir -p "$KAROSHI_DATA"/images
+if [[ -f /tmp/netlogon/linuxclient/background.png ]]; then
+	cp -f /tmp/netlogon/linuxclient/background.png "$KAROSHI_DATA"/images
+	update-alternatives --install /usr/share/backgrounds/karoshi.png karoshi-background "$KAROSHI_DATA"/images/background.png 50
+fi
+if [[ -f /tmp/netlogon/linuxclient/login-background.png ]]; then
+	cp -f /tmp/netlogon/linuxclient/login-background.png "$KAROSHI_DATA"/images
+	update-alternatives --install /usr/share/backgrounds/karoshi-login.png karoshi-login-background "$KAROSHI_DATA"/images/login-background.png 50
+fi
+
+#Static ARPs
+[[ -f /tmp/netlogon/domain_information/static_arps ]] && arp -f /tmp/netlogon/domain_information/static_arps
+
+#Create GPG keyring for verifying server messages
+[[ -e /opt/karoshi/keyring.gpg ]] && rm -f /opt/karoshi/keyring.gpg
+if [[ -f /tmp/netlogon/linuxclient/server-verify.key ]]; then
+	gpg --batch --no-default-keyring --keyring /opt/karoshi/keyring.gpg --import /tmp/netlogon/linuxclient/server-verify.key
+fi
+
+#Get list of available user web folder servers
+[[ -e /opt/karoshi/user_web_servers ]] && rm -f /opt/karoshi/user_web_servers
+if [[ -f /tmp/netlogon/domain_information/user_web_servers ]]; then
+	cp /tmp/netlogon/domain_information/user_web_servers /opt/karoshi
+fi
+
+###########################
+#Update acceptable_use
+###########################
+[[ -f /tmp/netlogon/linuxclient/acceptable_use.txt ]] && cp -f /tmp/netlogon/linuxclient/acceptable_use.txt /opt/karoshi/
+[[ -f /opt/karoshi/acceptable_use.txt ]] && chmod 0644 /opt/karoshi/acceptable_use.txt
+
+###########################
+#Update desktop icons for groups
+###########################
+echo "Updating desktop icons"
+if [[ -d /tmp/netlogon/linuxclient/$LINUX_VERSION/desktop-icons ]]; then
+	[[ -e /opt/karoshi/desktop-icons ]] && rm -rf /opt/karoshi/desktop-icons
+	cp -rfT /tmp/netlogon/linuxclient/$LINUX_VERSION/desktop-icons /opt/karoshi/desktop-icons
+elif [[ -d /tmp/netlogon/linuxclient/$LINUX_VERSION/desktop_icons ]]; then
+	[[ -e /opt/karoshi/desktop-icons ]] && rm -rf /opt/karoshi/desktop-icons
+	cp -rfT /tmp/netlogon/linuxclient/$LINUX_VERSION/desktop_icons /opt/karoshi/desktop-icons
+else
+	if ! karoshi-manage-flags get offline_mode >/dev/null; then
+		[[ -e /opt/karoshi/desktop-icons ]] && rm -rf /opt/karoshi/desktop-icons
+		echo "WARNING: Could not find any desktop icons on server"
+	fi
+fi
+
+if [[ -d /opt/karoshi/desktop-icons ]]; then
+	chmod -R 0644 /opt/karoshi/desktop-icons
+	chmod -R u+X,g+X,o+X /opt/karoshi/desktop-icons
+	while read file; do
+		filename="$(tr '[:upper:] ' '[:lower:]-' <<< "$(basename "$file")")"
+		mv "$file" "`dirname "$file"`/karoshi-$filename"
+	done < <(find /opt/karoshi/desktop-icons/ -name "*.desktop" -and -not -name "karoshi-*.desktop")
+fi
+
+##########################
+#Configure virtualbox drive
+##########################
+
+function configureVboxPartition {
+	#Copy data if required
+	if ! [[ $(find "$KAROSHI_DATA"/"$KAROSHI_VIRTUALBOX" -maxdepth 0 -type d -empty 2>/dev/null) ]]; then
+		mkdir -p /tmp/karoshi-virtualbox
+		mount "$1" /tmp/karoshi-virtualbox
+		find "$KAROSHI_DATA"/"$KAROSHI_VIRTUALBOX" -mindepth 1 -maxdepth 1 -print0 | xargs -r0 mv -t /tmp/karoshi-virtualbox
+		umount /tmp/karoshi-virtualbox
+		rmdir /tmp/karoshi-virtualbox
+	fi
+
+	#Write to /etc/fstab
+	uuid=$(lsblk -no UUID "$1")
+	echo "# karoshi: $KAROSHI_DATA/$KAROSHI_VIRTUALBOX" >> /etc/fstab
+	echo "UUID=$uuid	`sed 's/ /\\040/g' <<< "$KAROSHI_DATA"/"$KAROSHI_VIRTUALBOX"`	ext4	defaults,nosuid	0	2" >> /etc/fstab
+
+	mount "$KAROSHI_DATA"/"$KAROSHI_VIRTUALBOX"
+}
+
+[[ -d $KAROSHI_DATA/$KAROSHI_VIRTUALBOX ]] || mkdir "$KAROSHI_DATA"/"$KAROSHI_VIRTUALBOX" -m 0755
+if ! grep -Eq "^[^[:space:]]+[[:space:]]+$KAROSHI_DATA/$KAROSHI_VIRTUALBOX[[:space:]]" /etc/fstab; then
+	vbox_set=false
+	#Detect any ext4 partition with a label of KAROSHI-VBOX
+	while read -r partition; do
+		if [[ $(e2label "$partition") == "KAROSHI-VBOX" ]]; then
+			echo "Found existing VirtualBox partition for $KAROSHI_DATA/$KAROSHI_VIRTUALBOX: $partition"
+			configureVboxPartition "$partition"
+			vbox_set=true
+			break
+		fi
+	done < <(find /dev -maxdepth 1 -name sd??)
+
+	if ! $vbox_set; then
+		#Detect any SATA or SCSI drives with no valid partition table
+		drive=$(parted -lms 2>/dev/null | sed -n 's@Error: \(/dev/sd.\): unrecognised disk label@\1@p')
+		#Detect any SATA or SCSI drives with no partitions
+		if ! [[ $drive ]]; then
+			drive=$(parted -lms 2>/dev/null | sed -n '/BYT;$/ { n; /^\/dev\/sd./ { h; n; /^$/ { g; s/\([^:]*\):.*/\1/p; q; } } }')
+		fi
+
+		if [[ $drive ]]; then
+			echo "Detected candidate drive for $KAROSHI_DATA/$KAROSHI_VIRTUALBOX: $drive"
+			#Make GPT partition table and single logical partition
+			parted -s "$drive" -- mktable gpt
+			parted -s -a optimal "$drive" -- mkpart logical 0% 100%
+			mkfs.ext4 -L "KAROSHI-VBOX" "$drive"1
+
+			configureVboxPartition "$drive"1
+		fi
+	fi
+fi
+
+##########################
+#Miscellaneous things
+##########################
+
+#Restrict cron and at to root
+echo root > /etc/cron.allow
+echo root > /etc/at.allow
+
+#Enable trim support in fstab
+for device in /dev/sd*; do
+	device_uuid=`blkid $device | sed 's@.*UUID="\([^"]*\)".*@\1@'`
+	if [[ $device_uuid ]] && [[ `hdparm -I $device | grep TRIM` ]]; then
+		sed -i "/swap\|discard,noatime/!s@\(UUID=$device_uuid[[:blank:]]\+[^[:blank:]]\+[[:blank:]]\+[^[:blank:]]\+[[:blank:]]\+[^[:blank:]]\+\)@\1,discard,noatime@" /etc/fstab
+	fi
+done
+
+#Write new variables to file
+updateVariables

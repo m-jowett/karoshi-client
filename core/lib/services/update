@@ -1,0 +1,53 @@
+#!/bin/bash
+# Process with Makefile
+
+#Copyright (C) 2013 Robin McCorkell
+
+#This file is part of Karoshi Client.
+#
+#Karoshi Client is free software: you can redistribute it and/or modify
+#it under the terms of the GNU Affero General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#Karoshi Client is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU Affero General Public License for more details.
+#
+#You should have received a copy of the GNU Affero General Public License
+#along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
+
+set -e
+
+karoshi-manage-flags get domainset >/dev/null
+
+source "@sysconfdir@/karoshi/core/variables"
+
+#Check if version has been set
+if [[ -z $LINUX_VERSION ]]; then
+	echo "Linux version not set" >&2
+	LINUX_VERSION=notset
+fi
+
+#Mount netlogon
+mkdir /tmp/netlogon
+
+set +e
+mount.cifs //"$PDC"."$DNSSUFFIX"/netlogon /tmp/netlogon -o guest 1>/dev/null
+mount_ret=$?
+set -e
+
+if (( mount_ret != 0 )); then
+	echo "Error connecting to $PDC.$DNSSUFFIX - offline mode enabled" >&2
+	trap "{ rmdir /tmp/netlogon }" EXIT
+	karoshi-manage-flags set offline_mode
+else
+	trap "{ umount /tmp/netlogon; rmdir /tmp/netlogon }" EXIT
+	karoshi-manage-flags unset offline_mode
+fi
+
+#Run update scripts
+while IFS= read -rd $'\0' file; do
+	source "$file"
+done < <(find "@libdir@/karoshi/update" -type f -print0 | sort -z)

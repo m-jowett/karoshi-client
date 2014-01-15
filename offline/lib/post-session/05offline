@@ -1,0 +1,39 @@
+#!/bin/bash
+# Process with Makefile
+
+#Copyright (C) 2013 Robin McCorkell
+
+#This file is part of Karoshi Client.
+#
+#Karoshi Client is free software: you can redistribute it and/or modify
+#it under the terms of the GNU Affero General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#Karoshi Client is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU Affero General Public License for more details.
+#
+#You should have received a copy of the GNU Affero General Public License
+#along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
+
+#Detect offline home area
+offline_home_exists=false
+if $is_domain && mountpoint -q ~/offline-home; then
+	echo "Detected offline home area"
+	offline_home_exists=true
+fi
+
+if $is_domain; then
+	if karoshi-manage-flags get offline_mode >/dev/null; then
+		if $offline_home_exists; then
+			alternate_home="offline-home"
+		fi
+	else
+		if $offline_home_exists; then
+			echo "Setting offline home area to be removed"
+			echo "delete" > "@localstatedir@/lib/karoshi/offline/flags/$USER"
+		fi
+	fi
+fi

@@ -1,0 +1,39 @@
+#!/bin/bash
+# Process with Makefile
+
+#Copyright (C) 2013 Robin McCorkell
+
+#This file is part of Karoshi Client.
+#
+#Karoshi Client is free software: you can redistribute it and/or modify
+#it under the terms of the GNU Affero General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#Karoshi Client is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU Affero General Public License for more details.
+#
+#You should have received a copy of the GNU Affero General Public License
+#along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
+
+#Backup configuration
+if $is_domain && [[ $alternate_home ]]; then
+	#Create archive in ~/$alternate_home/.configuration.tar.gz
+	[[ ! -f ~/$alternate_home/.configuration.tar.gz ]] || rm ~/"$alternate_home"/.configuration.tar.gz
+	if [[ "${configuration_list[@]}" ]]; then
+		tar -cz --one-file-system \
+		  --exclude='karoshi-*.desktop' --exclude='*.karoshi-session' \
+		  -C ~ -f ~/"$alternate_home"/.configuration.tar.gz \
+		  "${configuration_list[@]}"
+	fi
+
+	#Create archive in ~/$alternate_home/.desktop-icons.tar.gz
+	[[ ! -f ~/$alternate_home/.desktop-icons.tar.gz ]] || rm ~/"$alternate_home"/.desktop-icons.tar.gz
+	if [[ "${desktop_list[@]}" ]]; then
+		tar -cz --one-file-system \
+		  -C ~ -f ~/"$alternate_home"/.desktop-icons.tar.gz \
+		  "${desktop_list[@]}"
+	fi
+fi

@@ -1,3 +1,0 @@
-KAROSHI_DATA="/var/lib/karoshi"
-KAROSHI_OFFLINE_HOMES="offline-homes"
-KAROSHI_VIRTUALBOX="virtualbox"

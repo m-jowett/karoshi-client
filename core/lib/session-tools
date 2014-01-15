@@ -1,0 +1,65 @@
+#!/bin/bash
+
+#Copyright (C) 2013 Robin McCorkell
+
+#This file is part of Karoshi Client.
+#
+#Karoshi Client is free software: you can redistribute it and/or modify
+#it under the terms of the GNU Affero General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#Karoshi Client is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU Affero General Public License for more details.
+#
+#You should have received a copy of the GNU Affero General Public License
+#along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
+
+#function create_entries
+#	$1 is mount name
+#	$2 is mount path
+#	$3 is icon
+function create_entries {
+	filename=${1,,}
+	filename=${filename// /-}
+	command="xdg-open"
+	iconname="$1"
+	if [[ $sudo_open ]]; then
+		iconname="Admin $iconname"
+		command="gksudo -D '$iconname' -- xdg-open"
+	fi
+	echo "Generating desktop and menu entry: $1"
+	#Desktop and Menu
+	tee ~/Desktop/karoshi-"$filename".desktop > ~/.local/share/applications/karoshi-"$filename".desktop << EOF
+[Desktop Entry]
+Version=1.0
+Type=Application
+Terminal=false
+Exec=$command $2
+Name=$iconname
+Icon=$3
+Categories=X-XFCE;X-Xfce-Toplevel;Karoshi;
+OnlyShowIn=XFCE;
+EOF
+}
+#function create_link
+#	$1 is name
+#	$2 is location
+#	$3 is icon
+function create_link {
+	name="$1"
+	location="$2"
+	icon="$3"
+	filename=$(tr '[:upper:] ' '[:lower:]-' <<< "$name")
+	echo "Generating desktop link: $name"
+	cat > ~/Desktop/karoshi-"$filename".desktop << EOF
+[Desktop Entry]
+Version=1.0
+Type=Link
+Name=$name
+Icon=$icon
+URL=$location
+EOF
+}

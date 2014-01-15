@@ -1,0 +1,79 @@
+#!/bin/bash
+# Process with Makefile
+
+#Copyright (C) 2013 Robin McCorkell
+
+#This file is part of Karoshi Client.
+#
+#Karoshi Client is free software: you can redistribute it and/or modify
+#it under the terms of the GNU Affero General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#Karoshi Client is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU Affero General Public License for more details.
+#
+#You should have received a copy of the GNU Affero General Public License
+#along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
+
+source "@libdir@/karoshi/session-tools"
+
+if $is_domain; then
+	#Create home icon first so that it appears first on the desktop
+	if mountpoint -q ~/network/home; then
+		create_entries "home" ~/network/home folder-home
+		server=$(mount | sed -n "s@^//\([^.]*\).$DNSSUFFIX/$USER on $HOME/network/home .*@\1@p")
+		if [[ -f /opt/karoshi/user_web_servers ]] && grep -q "^$server\$" /opt/karoshi/user_web_servers &&
+		  [[ -d ~/network/home/public_html ]] && getfacl ~/network/home/public_html | grep -q '^user:www-data:r-x$'; then
+			create_link "Web Hosting" "http://$server.$DNSSUFFIX/~$USER/" emblem-web
+		fi
+
+		alternate_home="network/home"
+	else
+		echo "WARNING: No domain home area found" >&2
+		create_entries "Home" ~ folder-home
+	fi
+
+	#Create icons to other mounted network shares
+	while IFS= read -r -d $'\0' mountpath; do
+		mountname=$(basename $mountpath)
+		if [[ $mountname != home ]]; then
+			create_entries "$mountname" "$mountpath" folder-publicshare
+		fi
+	done < <(find ~/network -maxdepth 1 -mindepth 1 -exec mountpoint -q {} \; -print)
+
+	#Copy in default icons
+	if [[ -d /opt/karoshi/desktop-icons/all ]]; then
+		find /opt/karoshi/desktop-icons/all -mindepth 1 -maxdepth 1 -print0 | xargs -r0 cp -rf -t ~/Desktop
+	fi
+
+	#Copy in extra icons for groups
+	pri_group=$(id -gn)
+	if [[ -d /opt/karoshi/desktop-icons/$pri_group ]]; then
+		find /opt/karoshi/desktop-icons/$pri_group -mindepth 1 -maxdepth 1 -print0 | xargs -r0 cp -rf -t ~/Desktop
+	fi
+
+	#Clear any sessions
+	[[ -e ~/.cache/sessions ]] && rm -rf ~/.cache/sessions
+	mkdir -p ~/.cache/sessions
+else
+	###############
+	#Local user
+	###############
+	create_entries "Home" ~ folder-home
+fi
+
+#Add file manager entry to / if administrator
+if $is_admin; then
+	sudo_open=true create_entries "File Manager" / folder-system
+fi
+
+#Copy in admin-skel
+if $is_admin && [[ -d /opt/karoshi/admin-skel ]]; then
+	find /opt/karoshi/admin-skel -mindepth 1 -maxdepth 1 -print0 | xargs -r0 cp -rf -t ~
+fi
+
+#Set permissions on icons
+find ~/Desktop -name '*.desktop' -print0 | xargs -r0 chmod 0700

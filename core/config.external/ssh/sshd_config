@@ -1,0 +1,3 @@
+# GSSAPI options
+GSSAPIAuthentication yes
+GSSAPICleanupCredentials yes

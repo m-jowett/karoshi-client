@@ -1,0 +1,101 @@
+#!/bin/bash
+# Process with Makefile
+
+#Copyright (C) 2013 Robin McCorkell
+
+#This file is part of Karoshi Client.
+#
+#Karoshi Client is free software: you can redistribute it and/or modify
+#it under the terms of the GNU Affero General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#Karoshi Client is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU Affero General Public License for more details.
+#
+#You should have received a copy of the GNU Affero General Public License
+#along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
+
+set -e
+
+flagsDir="@sysconfdir@/karoshi/flags"
+
+if [[ ! -d $flagsDir ]]; then
+	echo "Warning: flagsDir $flagsDir did not exist" >&2
+	mkdir -p "$flagsDir"
+fi
+
+declare -A flags=( [networkset]=false [domainset]=false [passwordset]=false [nokaroshi]=false [forcesetpdc]=false [no_idle_shutdown]=false [no_multicast]=false [offline_mode]=false )
+declare -A flagsCanonical=( [networkset]="Network Set" [domainset]="Domain Set" [passwordset]="Password Set" [nokaroshi]="No Karoshi" [forcesetpdc]="Force Set PDC" [no_idle_shutdown]="No Idle Shutdown" [no_multicast]="Disable Multicast Messages" [offline_mode]="Offline Mode" )
+
+function checkFlag {
+	if [[ -f $flagsDir/$1 ]]; then flags[$1]=true; else flags[$1]=false; fi
+}
+function setFlag {
+	if ${flags[$1]}; then
+		touch "$flagsDir"/"$1"
+	else
+		if [[ -f $flagsDir/$1 ]]; then
+			rm -f "$flagsDir"/"$1"
+		fi
+	fi
+}
+function printHelp {
+	echo "Usage:" >&2
+	echo "	$0 <get|set|unset> <flag>" >&2
+	exit 255
+}
+
+if [[ $# -eq 2 ]]; then
+	#Command line mode
+	case "$1" in
+	get)
+		checkFlag "$2"
+		${flags[$2]} && echo "$flagsDir/$2"
+		;;
+	set)
+		flags[$2]=true
+		setFlag "$2"
+		;;
+	unset)
+		flags[$2]=false
+		setFlag "$2"
+		;;
+	*)
+		printHelp
+		;;
+	esac
+elif [[ $# -eq 0 ]]; then
+	#Interactive mode
+	running=true
+
+	while $running; do
+		command=(  )
+
+		# check flags and create command
+		for flag in "${!flags[@]}"; do
+			checkFlag $flag
+			command+=( "--field=${flagsCanonical[$flag]}:CHK" "${flags[$flag]}" )
+		done
+
+		data=$(yad --image="karoshi-smalllogo" --window-icon="karoshi-smalllogo" --width=400 \
+				  --title="Karoshi Flag Configuration" --button="gtk-ok" --button="gtk-cancel" --button="gtk-revert-to-saved" \
+				  --form "${command[@]}")
+		yadstatus=$?
+
+		[[ $yadstatus -eq 1 ]] && exit 2
+		[[ $yadstatus -ne 2 ]] && running=false
+	done
+
+	# decypher DATA and set flags
+	counter=1
+	for flag in "${!flags[@]}"; do
+		flags[$flag]=`cut -d"|" -f$counter <<< "$data" | tr '[:upper:]' '[:lower:]'`
+		setFlag $flag
+		(( ++counter ))
+	done
+else
+	printHelp
+fi

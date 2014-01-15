@@ -1,0 +1,65 @@
+#!/bin/bash
+# Process with Makefile
+
+#Copyright (C) 2013 Robin McCorkell
+
+#This file is part of Karoshi Client.
+#
+#Karoshi Client is free software: you can redistribute it and/or modify
+#it under the terms of the GNU Affero General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#Karoshi Client is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU Affero General Public License for more details.
+#
+#You should have received a copy of the GNU Affero General Public License
+#along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
+
+source "@sysconfdir@/karoshi/variables/core"
+
+#####################
+#User checks
+#####################
+
+#Detect an administrator
+is_admin=false
+groups=( $(id -nG) )
+for group in "${groups[@]}"; do
+	if [[ $group == "admin" ]] || [[ $group == "sudo" ]] || [[ $group == "tech" ]]; then
+		echo "Detected admin user"
+		is_admin=true
+		break
+	fi
+done
+if [[ $(id -nu) == "root" ]]; then
+	is_admin=true
+fi
+
+#Detect a domain user
+is_domain=false
+if [[ $(id -u) -ge 1000 ]] && [[ $(id -u) -ne 65534 ]]; then
+	echo "Detected domain user"
+	is_domain=true
+fi
+
+#Exit if still logged in
+if [[ $(pmvarrun -u "$(id -nu)" -o 0) -gt 1 ]]; then
+	echo "User still logged in - exiting"
+	exit 0
+fi
+
+#####################
+#Preparation
+#####################
+
+#Remove Karoshi desktop icons
+find ~/Desktop -mindepth 1 -maxdepth 1 -name 'karoshi-*.desktop' -delete
+
+#Run scripts
+while IFS= read -rd $'\0' file; do
+	source "$file"
+done < <(find "@libdir@/karoshi/post-session" -type f -print0 | sort -z)
+

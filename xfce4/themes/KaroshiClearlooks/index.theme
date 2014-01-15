@@ -1,0 +1,7 @@
+[X-GNOME-Metatheme]
+Name=Karoshi Clearlooks
+Type=X-GNOME-Metatheme
+Comment=Theme based on Clearlooks for Karoshi Client
+Encoding=UTF-8
+GtkTheme=KaroshiClearlooks
+IconTheme=elementary-xfce

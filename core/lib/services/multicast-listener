@@ -1,0 +1,49 @@
+#!/bin/bash
+# Process with Makefile
+
+#Copyright (C) 2013 Robin McCorkell
+
+#This file is part of Karoshi Client.
+#
+#Karoshi Client is free software: you can redistribute it and/or modify
+#it under the terms of the GNU Affero General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#Karoshi Client is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU Affero General Public License for more details.
+#
+#You should have received a copy of the GNU Affero General Public License
+#along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
+
+set -e
+
+if karoshi-manage-flags get no_multicast >/dev/null; then
+	exit 250
+fi
+
+[[ -f "@localstatedir@/karoshi/keyring.gpg" ]]
+
+#Listen for message of length up to 64KiB
+data=$(perl -e << EOF
+use IO::Socket::Multicast;
+my \$s = IO::Socket::Multicast->new(LocalPort=>51000);
+\$s->mcast_add("239.0.11.1");
+my \$data;
+\$s->recv(\$data, 65536);
+\$s->mcast_drop("239.0.11.1");
+print(\$data);
+EOF
+)
+
+#Check integrity of message
+echo "Checking integrity of message length ${#data}"
+gpg --batch --no-default-keyring --keyring "@localstatedir@/karoshi/keyring.gpg" --verify <<< "$data"
+#Execute
+echo "Received authentic message, executing"
+command=$(sed -n '4,/^-----BEGIN PGP SIGNATURE-----$/ { /^-----BEGIN PGP SIGNATURE-----$/d; s/^- //; p; }' <<< "$data")
+bash -c "$command"
+
+exit 0
