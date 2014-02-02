@@ -1,5 +1,5 @@
 #!/bin/bash
-# Process with Makefile
+# @makefile_in@
 
 #Copyright (C) 2013 Robin McCorkell
 

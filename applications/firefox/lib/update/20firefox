@@ -20,30 +20,12 @@
 
 set -e
 
-if karoshi-manage-flags get no_multicast >/dev/null; then
-	exit 250
+[[ -d "@localstatedir@/lib/karoshi/firefox" ]]
+
+#Copy domain CA certificate
+if [[ -f "@localstatedir@/lib/karoshi/firefox/cacert.pem" ]]; then
+	rm -f "@localstatedir@/lib/karoshi/firefox/cacert.pem"
 fi
-
-[[ -f "@localstatedir@/karoshi/keyring.gpg" ]]
-
-#Listen for message of length up to 64KiB
-data=$(perl -e << EOF
-use IO::Socket::Multicast;
-my \$s = IO::Socket::Multicast->new(LocalPort=>51000);
-\$s->mcast_add("239.0.11.1");
-my \$data;
-\$s->recv(\$data, 65536);
-\$s->mcast_drop("239.0.11.1");
-print(\$data);
-EOF
-)
-
-#Check integrity of message
-echo "Checking integrity of message length ${#data}"
-gpg --batch --no-default-keyring --keyring "@localstatedir@/karoshi/keyring.gpg" --verify <<< "$data"
-#Execute
-echo "Received authentic message, executing"
-command=$(sed -n '4,/^-----BEGIN PGP SIGNATURE-----$/ { /^-----BEGIN PGP SIGNATURE-----$/d; s/^- //; p; }' <<< "$data")
-bash -c "$command"
-
-exit 0
+if [[ -f /tmp/netlogon/domain_information/cacert.pem ]]; then
+	cp /tmp/netlogon/domain_information/cacert.pem "@localstatedir@/lib/karoshi/firefox/"
+fi

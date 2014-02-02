@@ -1,0 +1,105 @@
+#!/bin/bash
+# @makefile_in@
+
+#Copyright (C) 2013 Robin McCorkell
+
+#This file is part of Karoshi Client.
+#
+#Karoshi Client is free software: you can redistribute it and/or modify
+#it under the terms of the GNU Affero General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+#
+#Karoshi Client is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU Affero General Public License for more details.
+#
+#You should have received a copy of the GNU Affero General Public License
+#along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
+
+source "@sysconfdir@/karoshi/variables/core"
+
+#create user.js for default Thunderbird settings
+if $is_domain && which thunderbird >/dev/null && [[ -d ~/.thunderbird ]]; then
+	thunderbird_profile=$(sed -n '0,/^Path=/s/^Path=//p' ~/.thunderbird/profiles.ini)
+	if [[ $thunderbird_profile ]] && [[ -d ~/.thunderbird/$thunderbird_profile ]]; then
+		#Apply CA certificate
+		if [[ -f "@localstatedir@/lib/karoshi/thunderbird/cacert.pem" ]]; then
+			certutil -A -n "Karoshi CA" -addstore root -t "CTu,CTu,CTu" -i "@localstatedir@/lib/karoshi/thunderbird/cacert.pem" -d ~/.thunderbird/"$thunderbird_profile"
+		fi
+
+		#Remove updated messages and extension checking
+		thunderbird_version=$(thunderbird --version | sed 's/^[^0-9]*//')
+		cat >> ~/.thunderbird/"$thunderbird_profile"/user.js << EOF
+user_pref('extensions.lastAppVersion', '$thunderbird_version');
+user_pref('extensions.lastPlatformVersion', '$thunderbird_version');
+user_pref('mailnews.start_page_override.mstone', '$thunderbird_version');
+EOF
+
+		#Cache settings
+		echo "user_pref('browser.cache.disk.capacity', 5120);" >> ~/.thunderbird/"$thunderbird_profile"/user.js
+
+		#Proxy server
+		if [[ $PROXYSERVER ]]; then
+			cat >> ~/.thunderbird/"$thunderbird_profile"/user.js << EOF
+user_pref('network.proxy.http', '$PROXYSERVER.$DNSSUFFIX');
+user_pref('network.proxy.http_port', 3128);
+user_pref('network.proxy.ssl', '$PROXYSERVER.$DNSSUFFIX');
+user_pref('network.proxy.ssl_port', 3128);
+user_pref('network.proxy.ftp', '$PROXYSERVER.$DNSSUFFIX');
+user_pref('network.proxy.ftp_port', 3128);
+user_pref('network.proxy.socks', '$PROXYSERVER.$DNSSUFFIX');
+user_pref('network.proxy.socks_port', 3128);
+user_pref('network.proxy.gopher', '$PROXYSERVER.$DNSSUFFIX');
+user_pref('network.proxy.gopher_port', 3128);
+user_pref('network.proxy.type', 1);
+user_pref('network.proxy.no_proxies_on', 'localhost, 127.0.0.0/8, $DNSSUFFIX, $PDC');
+EOF
+		fi
+
+		#Set up Kerberos
+		if [[ $DOMAINTYPE == samba4 ]] || [[ $DOMAINTYPE == samba4_winbind ]]; then
+			echo "user_pref('network.negotiate-auth.trusted-uris', '$DNSSUFFIX');" >> ~/.thunderbird/"$thunderbird_profile"/user.js
+		fi
+
+		if [[ $MAILSERVER ]]; then
+			user_fullname=$(getent passwd $USER | cut -d: -f5 | cut -d, -f1)
+
+			cat >> ~/.thunderbird/"$thunderbird_profile"/user.js << EOF
+user_pref('mail.identity.id1.useremail', '$USER@$DNSSUFFIX');
+user_pref('mail.identity.id1.valid', true);
+user_pref('mail.identity.id1.fullName', '$user_fullname');
+user_pref('mail.identity.id1.smtpServer', 'smtp1');
+user_pref('mail.identity.id1.archive_enabled', false);
+user_pref('mail.identity.id1.draft_folder', 'imap://$USER@mail.$DNSSUFFIX/Drafts');
+user_pref('mail.identity.id1.drafts_folder_picker_mode', '0');
+user_pref('mail.identity.id1.fcc_folder', 'imap://$USER@mail.$DNSSUFFIX/Sent');
+user_pref('mail.identity.id1.fcc_folder_picker_mode', '0');
+user_pref('mail.identity.id1.stationery_folder', 'imap://$USER@mail.$DNSSUFFIX/Templates');
+user_pref('mail.identity.id1.tmpl_folder_picker_mode', '0');
+user_pref('mail.identity.id1.reply_on_top', 1);
+user_pref('mail.identity.id1.sig_bottom', false);
+
+user_pref('mail.server.server1.authMethod', 5);
+user_pref('mail.server.server1.check_new_mail', true);
+user_pref('mail.server.server1.hostname', 'mail.$DNSSUFFIX');
+user_pref('mail.server.server1.login_at_startup', true);
+user_pref('mail.server.server1.name', '$USER@$DNSSUFFIX');
+user_pref('mail.server.server1.socketType', 2);
+user_pref('mail.server.server1.storeContractID', '@mozilla.org/msgstore/berkeleystore;1');
+user_pref('mail.server.server1.type', 'imap');
+user_pref('mail.server.server1.userName', '$USER');
+user_pref('mail.server.server1.using_subscription', false);
+user_pref('mail.server.server1.offline_download', false);
+
+user_pref('mail.smtpserver.smtp1.authMethod', 5);
+user_pref('mail.smtpserver.smtp1.hostname', 'mail.$DNSSUFFIX');
+user_pref('mail.smtpserver.smtp1.port', 25);
+user_pref('mail.smtpserver.smtp1.try_ssl', 2);
+user_pref('mail.smtpserver.smtp1.username', '$USER');
+user_pref('mail.smtpservers', 'smtp1');
+EOF
+		fi
+	fi
+fi

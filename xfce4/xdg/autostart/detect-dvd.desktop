@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Karoshi video DVD detection
+Comment=Detect video DVDs and generate icon
+Exec=karoshi-detect-dvd
+OnlyShowIn=XFCE;

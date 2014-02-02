@@ -18,22 +18,21 @@
 #You should have received a copy of the GNU Affero General Public License
 #along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
 
-#Backup configuration
-if $is_domain && [[ $alternate_home ]]; then
-	#Create archive in ~/$alternate_home/.configuration.tar.gz
-	[[ ! -f ~/$alternate_home/.configuration.tar.gz ]] || rm ~/"$alternate_home"/.configuration.tar.gz
-	if [[ "${configuration_list[@]}" ]]; then
-		tar -cz --one-file-system \
-		  --exclude='karoshi-*.desktop' --exclude='*.karoshi-session' \
-		  -C ~ -f ~/"$alternate_home"/.configuration.tar.gz \
-		  "${configuration_list[@]}"
-	fi
+#Mark files for saving
+if which thunderbird >/dev/null && [[ -d ~/.thunderbird ]]; then
+	thunderbird_profile=$(sed -n '0,/^Path=/s/^Path=//p' ~/.thunderbird/profiles.ini)
 
-	#Create archive in ~/$alternate_home/.desktop-icons.tar.gz
-	[[ ! -f ~/$alternate_home/.desktop-icons.tar.gz ]] || rm ~/"$alternate_home"/.desktop-icons.tar.gz
-	if [[ "${desktop_list[@]}" ]]; then
-		tar -cz --one-file-system \
-		  -C ~ -f ~/"$alternate_home"/.desktop-icons.tar.gz \
-		  "${desktop_list[@]}"
+	#Remove .thunderbird from configuration_list
+	temp_list=()
+	for dir in "${configuration_list[@]}"; do
+		if [[ $dir != */.thunderbird ]]; then
+			temp_list+=( "$dir" )
+		fi
+	done
+	configuration_list=( "${temp_list[@]}" )
+
+	if [[ $thunderbird_profile ]] && [[ -d ~/.thunderbird/$thunderbird_profile ]]; then
+		configuration_list+=( ".thunderbird/$thunderbird_profile/places.sqlite" )
 	fi
 fi
+
