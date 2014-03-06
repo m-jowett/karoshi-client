@@ -4,11 +4,11 @@ iconsdir = $(datadir)/pixmaps
 configdir = $(sysconfdir)/karoshi-client
 config_variablesdir = $(configdir)/variables
 
-lib_pamdir = $(pkglibdir)/pam
-lib_updatedir = $(pkglibdir)/update
-lib_servicesdir = $(pkglibdir)/services
-lib_pre_sessiondir = $(pkglibdir)/pre-session
-lib_post_sessiondir = $(pkglibdir)/post-session
+lib_pamdir = $(pkglibexecdir)/pam
+lib_updatedir = $(pkglibexecdir)/update
+lib_servicesdir = $(pkglibexecdir)/services
+lib_pre_sessiondir = $(pkglibexecdir)/pre-session
+lib_post_sessiondir = $(pkglibexecdir)/post-session
 
 data_offlinedir = $(pkgdata)/offline
 data_admin_skeldir = $(pkgdata)/admin-skel
@@ -31,6 +31,7 @@ AM_DEFAULT_SOURCE_EXT = .in
 	  -e 's,@bindir@,$(bindir),g' \
 	  -e 's,@libdir@,$(libdir),g' \
 	  -e 's,@pkglibdir@,$(pkglibdir),g' \
+	  -e 's,@pkglibexecdir@,$(pkglibexecdir),g' \
 	  -e 's,@datadir@,$(datadir),g' \
 	  -e 's,@pkgdatadir@,$(pkgdatadir),g' \
 	  -e 's,@mandir@,$(mandir),g' \
@@ -64,7 +65,7 @@ dist_icons_DATA = \
 dist_config_DATA =
 dist_config_variables_DATA = src/core/config/variables/core
 
-pkglib_PROGRAMS = \
+pkglibexec_PROGRAMS = \
   src/core/lib/common \
   src/core/lib/session-tools
 

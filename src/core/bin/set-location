@@ -20,7 +20,7 @@
 
 set -e
 
-source "@libdir@/karoshi/common"
+source "@pkglibexecdir@/common"
 
 temp_dir=$(mktemp -d)
 

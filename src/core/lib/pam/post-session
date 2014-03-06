@@ -61,5 +61,5 @@ find ~/Desktop -mindepth 1 -maxdepth 1 -name 'karoshi-*.desktop' -delete
 #Run scripts
 while IFS= read -rd $'\0' file; do
 	source "$file"
-done < <(find "@libdir@/karoshi/post-session" -type f -print0 | sort -z)
+done < <(find "@pkglibexecdir@/post-session" -type f -print0 | sort -z)
 

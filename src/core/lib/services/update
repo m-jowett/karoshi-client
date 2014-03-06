@@ -50,4 +50,4 @@ fi
 #Run update scripts
 while IFS= read -rd $'\0' file; do
 	source "$file"
-done < <(find "@libdir@/karoshi/update" -type f -print0 | sort -z)
+done < <(find "@pkglibexecdir@/update" -type f -print0 | sort -z)

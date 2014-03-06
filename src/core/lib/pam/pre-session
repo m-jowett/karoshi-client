@@ -65,4 +65,4 @@ find ~/Desktop ~/.local/share/applications ~/.config/autostart -name 'karoshi-*.
 #Run scripts
 while IFS= read -rd $'\0' file; do
 	source "$file"
-done < <(find "@libdir@/karoshi/pre-session" -type f -print0 | sort -z)
+done < <(find "@pkglibexecdir@/pre-session" -type f -print0 | sort -z)

@@ -18,7 +18,7 @@
 #You should have received a copy of the GNU Affero General Public License
 #along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
 
-source "@libdir@/karoshi/session-tools"
+source "@pkglibexecdir@/session-tools"
 
 if $is_domain; then
 	#Create home icon first so that it appears first on the desktop
