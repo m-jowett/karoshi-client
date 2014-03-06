@@ -131,15 +131,18 @@ lib_update_PROGRAMS += src/firewall/lib/update/04firewall
 
 lightdm_confdir = $(sysconfdir)/lightdm
 lightdm_themedir = $(datadir)/kde4/apps/lightdm-kde-greeter/themes
+lightdm_theme_karoshidir = $(lightdm_themedir)/karoshi-classic
 
 dist_lightdm_conf_DATA = \
   src/lightdm/config/lightdm.conf \
   src/lightdm/config/lightdm-kde-greeter.conf
 
-install-data-hook:
-	cp -rft "$(lightdm_themedir)" "$(srcdir)"/src/lightdm/themes/karoshi-classic
-
-EXTRA_DIST += src/lightdm/themes/karoshi-classic
+dist_lightdm_theme_karoshi_DATA = \
+  src/lightdm/theme/config.ui \
+  src/lightdm/theme/main.qml \
+  src/lightdm/theme/main.xml \
+  src/lightdm/theme/preview.png \
+  src/lightdm/theme/theme.rc
 
 ################
 # thunderbird
