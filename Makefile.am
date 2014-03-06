@@ -61,9 +61,13 @@ dist_icons_DATA = \
   src/core/icons/set-network.png \
   src/core/icons/smalllogo.png
 
+dist_config_DATA =
+dist_config_variables_DATA = src/core/config/variables/core
+
 pkglib_PROGRAMS = \
   src/core/lib/common \
   src/core/lib/session-tools
+
 lib_pam_PROGRAMS = \
   src/core/lib/pam/offline-homes \
   src/core/lib/pam/post-session \
@@ -88,10 +92,16 @@ lib_update_PROGRAMS = \
   src/core/lib/update/01offline \
   src/core/lib/update/05shutdown
 
-dist_config_variables_DATA = src/core/config/variables/core
 dist_data_offline_DATA = \
   src/core/data/offline/new-offline-user.desktop \
   src/core/data/offline/online-merge.desktop
+dist_data_admin_skel_DATA =
+dist_data_admin_skel_menus_DATA =
+
+dist_sudoers_DATA = 
+dist_xdg_DATA =
+dist_xdg_menus_DATA =
+dist_xdg_autostart_DATA =
 
 bin_PROGRAMS = \
   src/core/bin/manage-flags \
@@ -178,7 +188,7 @@ bin_PROGRAMS += detect-dvd
 
 dist_gvfs_mounts_DATA = src/xfce4/gvfs/mounts/network.mount
 
-dist_data_admin_skel_menus_DATA = src/xfce4/data/admin-skel/.config/menus/xfce-applications.menu
+dist_data_admin_skel_menus_DATA += src/xfce4/data/admin-skel/.config/menus/xfce-applications.menu
 
 lib_pre_session_PROGRAMS += src/xfce4/lib/pre-session/55xfce4
 
