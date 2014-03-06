@@ -184,7 +184,7 @@ xdg_xfce_xmldir = $(xdg_xfcedir)/xfconf/xfce-perchannel-xml
 xdg_Terminaldir = $(xdgdir)/Terminal
 xdg_Thunardir = $(xdgdir)/Thunar
 
-dist_applications_DATA += printing.desktop
+dist_applications_DATA += src/xfce4/applications/printing.desktop
 bin_PROGRAMS += detect-dvd
 
 dist_gvfs_mounts_DATA = src/xfce4/gvfs/mounts/network.mount
