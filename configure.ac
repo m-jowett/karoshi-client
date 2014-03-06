@@ -32,7 +32,7 @@ AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_FILES([Makefile])
 
 # Initialise automake and libtool
-AM_INIT_AUTOMAKE([subdir-objects])
+AM_INIT_AUTOMAKE([subdir-objects -Wno-portability])
 
 AC_PROG_MKDIR_P
 AX_PATH_PROG_OR_FAIL([UNZIP], [unzip])
