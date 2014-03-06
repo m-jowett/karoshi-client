@@ -12,6 +12,7 @@ lib_post_sessiondir = $(pkglibdir)/post-session
 
 data_offlinedir = $(pkgdata)/offline
 data_admin_skeldir = $(pkgdata)/admin-skel
+data_admin_skel_menusdir = $(data_admin_skeldir)/.config/menus
 
 sudoersdir = $(sysconfdir)/sudoers.d
 
@@ -151,8 +152,8 @@ dist_lightdm_theme_karoshi_DATA = \
 thunderbird_extensiondir = /usr/lib/mozilla/extensions/{3550f703-e582-4d05-9a08-453d09bdfdc6}
 
 install-data-hook:
-	mkdir "$(thunderbird_extensiondir)/{9533f794-00b4-4354-aa15-c2bbda6989f8}"
-	unzip -q "$(srcdir)"/src/thunderbird/extensions/firetray-0.4.6.xpi -d "$(thunderbird_extensiondir)/{9533f794-00b4-4354-aa15-c2bbda6989f8}"
+	$(MKDIR_P) "$(thunderbird_extensiondir)/{9533f794-00b4-4354-aa15-c2bbda6989f8}"
+	$(UNZIP) -q "$(srcdir)"/src/thunderbird/extensions/firetray-0.4.6.xpi -d "$(thunderbird_extensiondir)/{9533f794-00b4-4354-aa15-c2bbda6989f8}"
 
 EXTRA_DIST = firetray-0.4.6.xpi
 
@@ -165,6 +166,7 @@ lib_update_PROGRAMS += src/thunderbird/lib/update/21thunderbird
 ################
 
 gvfs_mountsdir = $(libdir)/gvfs/mounts
+
 xdg_xfcedir = $(xdgdir)/xfce4
 xdg_xfce_paneldir = $(xdg_xfcedir)/panel
 xdg_xfce_xmldir = $(xdg_xfcedir)/xfconf/xfce-perchannel-xml
@@ -176,10 +178,7 @@ bin_PROGRAMS += detect-dvd
 
 dist_gvfs_mounts_DATA = src/xfce4/gvfs/mounts/network.mount
 
-install-data-hook:
-	cp -rft "$(data_admin_skeldir)" "$(srcdir)"/src/xfce4/data/admin-skel/.config
-
-EXTRA_DIST += src/xfce4/data/admin-skel/.config
+dist_data_admin_skel_menus_DATA = src/xfce4/data/admin-skel/.config/menus/xfce-applications.menu
 
 lib_pre_session_PROGRAMS += src/xfce4/lib/pre-session/55xfce4
 

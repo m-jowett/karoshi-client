@@ -19,6 +19,13 @@
 AC_INIT([Karoshi Client], [4.0], [rmccorkell@karoshi.org.uk], [karoshi-client], [http://karoshi.org.uk/])
 AC_PREREQ([2.61])
 
+AC_DEFUN([AX_PATH_PROG_OR_FAIL],
+[AC_PATH_PROG([$1], [$2], [no])
+if test x"${$1}" == x"no"
+then
+	AC_MSG_ERROR([Unable to find $2, please install $2])
+fi])
+
 # Configuration
 AC_CONFIG_SRCDIR([src/core/lib/services/update])
 AC_CONFIG_MACRO_DIR([m4])
@@ -27,8 +34,8 @@ AC_CONFIG_FILES([Makefile])
 # Initialise automake and libtool
 AM_INIT_AUTOMAKE([subdir-objects])
 
-AC_PROG_INSTALL
 AC_PROG_MKDIR_P
+AX_PATH_PROG_OR_FAIL([UNZIP], [unzip])
 
 AC_OUTPUT
 
