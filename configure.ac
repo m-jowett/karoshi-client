@@ -27,7 +27,7 @@ then
 fi])
 
 # Configuration
-AC_CONFIG_SRCDIR([src/core/lib/services/update])
+AC_CONFIG_SRCDIR([src/core/lib/services/update.in])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_FILES([Makefile])
 
