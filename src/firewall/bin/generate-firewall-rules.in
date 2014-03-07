@@ -1,4 +1,5 @@
 #!/bin/bash
+# @makefile_in@
 
 #Copyright (C) 2013 Robin McCorkell
 
