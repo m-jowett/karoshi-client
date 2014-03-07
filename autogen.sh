@@ -3,7 +3,7 @@
 # Create ChangeLog from git
 if [[ -d .git ]] && which git > /dev/null; then
 	[[ -e ChangeLog ]] && rm -f ChangeLog
-	git log --pretty=medium --abbrev-commit > ChangeLog
+	git log --pretty=medium > ChangeLog
 else
 	touch ChangeLog #suppress errors with a missing ChangeLog
 fi
