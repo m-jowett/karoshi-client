@@ -23,7 +23,7 @@ xdg_autostartdir = $(xdgdir)/autostart
 #Substitution rule
 
 %: %.in
-	sed $< > $@ \
+	$(SED) $< > $@ \
 	  -e '/[@]makefile_in[@]/d' \
 	  -e 's,[@]prefix[@],$(prefix),g' \
 	  -e 's,[@]bindir[@],$(bindir),g' \

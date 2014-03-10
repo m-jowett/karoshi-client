@@ -35,6 +35,7 @@ AC_CONFIG_FILES([Makefile])
 AM_INIT_AUTOMAKE([subdir-objects -Wno-portability])
 
 AC_PROG_MKDIR_P
+AC_PROG_SED
 AX_PATH_PROG_OR_FAIL([UNZIP], [unzip])
 
 AC_OUTPUT
