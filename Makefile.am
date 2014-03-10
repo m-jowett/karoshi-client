@@ -10,8 +10,8 @@ lib_servicesdir = $(pkglibexecdir)/services
 lib_pre_sessiondir = $(pkglibexecdir)/pre-session
 lib_post_sessiondir = $(pkglibexecdir)/post-session
 
-data_offlinedir = $(pkgdata)/offline
-data_admin_skeldir = $(pkgdata)/admin-skel
+data_offlinedir = $(pkgdatadir)/offline
+data_admin_skeldir = $(pkgdatadir)/admin-skel
 data_admin_skel_menusdir = $(data_admin_skeldir)/.config/menus
 
 sudoersdir = $(sysconfdir)/sudoers.d
@@ -266,7 +266,7 @@ xdg_Terminaldir = $(xdgdir)/Terminal
 xdg_Thunardir = $(xdgdir)/Thunar
 
 dist_applications_DATA += src/xfce4/applications/printing.desktop
-bin_SCRIPTS += detect-dvd
+bin_SCRIPTS += src/xfce4/bin/detect-dvd
 
 dist_gvfs_mounts_DATA = src/xfce4/gvfs/mounts/network.mount
 
@@ -297,8 +297,7 @@ dist_xdg_xfce_xml_DATA = \
   src/xfce4/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-power-manager.xml
 
 CLEANFILES += \
-  src/xfce4/bin/detect-dvd \
   src/xfce4/lib/pre-session/55xfce4
 EXTRA_DIST += \
-  src/xfce4/bin/detect-dvd.in \
+  src/xfce4/bin/detect-dvd \
   src/xfce4/lib/pre-session/55xfce4.in
