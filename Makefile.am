@@ -22,9 +22,7 @@ xdg_autostartdir = $(xdgdir)/autostart
 
 #Substitution rule
 
-AM_DEFAULT_SOURCE_EXT = .in
-
-%$(EXEEXT): %.in
+%: %.in
 	sed $< > $@ \
 	  -e '/[@]makefile_in[@]/d' \
 	  -e 's,[@]prefix[@],$(prefix),g' \
@@ -64,30 +62,30 @@ dist_icons_DATA = \
 dist_config_DATA =
 dist_config_variables_DATA = src/core/config/variables/core
 
-pkglibexec_PROGRAMS = \
+pkglibexec_SCRIPTS = \
   src/core/lib/common \
   src/core/lib/session-tools
 
-lib_pam_PROGRAMS = \
+lib_pam_SCRIPTS = \
   src/core/lib/pam/offline-homes \
   src/core/lib/pam/post-session \
   src/core/lib/pam/pre-session \
   src/core/lib/pam/virtualbox-mkdir \
   src/core/lib/pam/wrapper
-lib_post_session_PROGRAMS = \
+lib_post_session_SCRIPTS = \
   src/core/lib/post-session/00core \
   src/core/lib/post-session/02configuration_pre \
   src/core/lib/post-session/05offline \
   src/core/lib/post-session/50configuration
-lib_pre_session_PROGRAMS = \
+lib_pre_session_SCRIPTS = \
   src/core/lib/pre-session/00core \
   src/core/lib/pre-session/05offline \
   src/core/lib/pre-session/50configuration
-lib_services_PROGRAMS = \
+lib_services_SCRIPTS = \
   src/core/lib/services/idle-shutdown \
   src/core/lib/services/multicast-listener \
   src/core/lib/services/update
-lib_update_PROGRAMS = \
+lib_update_SCRIPTS = \
   src/core/lib/update/00core \
   src/core/lib/update/01offline \
   src/core/lib/update/05shutdown
@@ -103,11 +101,63 @@ dist_xdg_DATA =
 dist_xdg_menus_DATA =
 dist_xdg_autostart_DATA =
 
-bin_PROGRAMS = \
+bin_SCRIPTS = \
   src/core/bin/manage-flags \
   src/core/bin/notify-shutdown \
   src/core/bin/set-local-password \
   src/core/bin/set-location
+
+CLEANFILES = \
+  src/core/lib/common \
+  src/core/lib/session-tools \
+  src/core/lib/pam/offline-homes \
+  src/core/lib/pam/post-session \
+  src/core/lib/pam/pre-session \
+  src/core/lib/pam/virtualbox-mkdir \
+  src/core/lib/pam/wrapper \
+  src/core/lib/post-session/00core \
+  src/core/lib/post-session/02configuration_pre \
+  src/core/lib/post-session/05offline \
+  src/core/lib/post-session/50configuration \
+  src/core/lib/pre-session/00core \
+  src/core/lib/pre-session/05offline \
+  src/core/lib/pre-session/50configuration \
+  src/core/lib/services/idle-shutdown \
+  src/core/lib/services/multicast-listener \
+  src/core/lib/services/update \
+  src/core/lib/update/00core \
+  src/core/lib/update/01offline \
+  src/core/lib/update/05shutdown \
+  src/core/bin/manage-flags \
+  src/core/bin/notify-shutdown \
+  src/core/bin/set-local-password \
+  src/core/bin/set-location
+
+EXTRA_DIST = \
+  src/core/lib/common.in \
+  src/core/lib/session-tools.in \
+  src/core/lib/pam/offline-homes.in \
+  src/core/lib/pam/post-session.in \
+  src/core/lib/pam/pre-session.in \
+  src/core/lib/pam/virtualbox-mkdir.in \
+  src/core/lib/pam/wrapper.in \
+  src/core/lib/post-session/00core.in \
+  src/core/lib/post-session/02configuration_pre.in \
+  src/core/lib/post-session/05offline.in \
+  src/core/lib/post-session/50configuration \
+  src/core/lib/pre-session/00core.in \
+  src/core/lib/pre-session/05offline.in \
+  src/core/lib/pre-session/50configuration \
+  src/core/lib/services/idle-shutdown.in \
+  src/core/lib/services/multicast-listener.in \
+  src/core/lib/services/update.in \
+  src/core/lib/update/00core.in \
+  src/core/lib/update/01offline.in \
+  src/core/lib/update/05shutdown.in \
+  src/core/bin/manage-flags.in \
+  src/core/bin/notify-shutdown.in \
+  src/core/bin/set-local-password.in \
+  src/core/bin/set-location.in
 
 ################
 # cups
@@ -118,23 +168,46 @@ cups_backenddir = $(libdir)/cups/backend
 dist_cups_backend_DATA = src/cups/backend/ksmb
 dist_sudoers_DATA += src/cups/sudoers.d/99ksmb
 
-lib_services_PROGRAMS += src/cups/lib/services/cups-config
-lib_update_PROGRAMS += src/cups/lib/update/05cups
+lib_services_SCRIPTS += src/cups/lib/services/cups-config
+lib_update_SCRIPTS += src/cups/lib/update/05cups
+
+CLEANFILES += \
+  src/cups/lib/services/cups-config \
+  src/cups/lib/update/05cups
+EXTRA_DIST += \
+  src/cups/lib/services/cups-config.in \
+  src/cups/lib/update/05cups.in
 
 ################
 # firefox
 ################
 
-lib_post_session_PROGRAMS += src/firefox/lib/post-session/30firefox
-lib_pre_session_PROGRAMS += src/firefox/lib/pre-session/70firefox
-lib_update_PROGRAMS += src/firefox/lib/update/20firefox
+lib_post_session_SCRIPTS += src/firefox/lib/post-session/30firefox
+lib_pre_session_SCRIPTS += src/firefox/lib/pre-session/70firefox
+lib_update_SCRIPTS += src/firefox/lib/update/20firefox
+
+CLEANFILES += \
+  src/firefox/lib/post-session/30firefox \
+  src/firefox/lib/pre-session/70firefox \
+  src/firefox/lib/update/20firefox
+EXTRA_DIST += \
+  src/firefox/lib/post-session/30firefox.in \
+  src/firefox/lib/pre-session/70firefox.in \
+  src/firefox/lib/update/20firefox.in
 
 ################
 # firewall
 ################
 
-bin_PROGRAMS += src/firewall/bin/generate-firewall-rules
-lib_update_PROGRAMS += src/firewall/lib/update/04firewall
+bin_SCRIPTS += src/firewall/bin/generate-firewall-rules
+lib_update_SCRIPTS += src/firewall/lib/update/04firewall
+
+CLEANFILES += \
+  src/firewall/bin/generate-firewall-rules \
+  src/firewall/lib/update/04firewall
+EXTRA_DIST += \
+  src/firewall/bin/generate-firewall-rules.in \
+  src/firewall/lib/update/04firewall.in
 
 ################
 # lightdm
@@ -165,11 +238,20 @@ install-data-hook:
 	$(MKDIR_P) "$(thunderbird_extensiondir)/{9533f794-00b4-4354-aa15-c2bbda6989f8}"
 	$(UNZIP) -q "$(srcdir)"/src/thunderbird/extensions/firetray-0.4.6.xpi -d "$(thunderbird_extensiondir)/{9533f794-00b4-4354-aa15-c2bbda6989f8}"
 
-EXTRA_DIST = firetray-0.4.6.xpi
+EXTRA_DIST += firetray-0.4.6.xpi
 
-lib_post_session_PROGRAMS += src/thunderbird/lib/post-session/30thunderbird
-lib_pre_session_PROGRAMS += src/thunderbird/lib/pre-session/70thunderbird
-lib_update_PROGRAMS += src/thunderbird/lib/update/21thunderbird
+lib_post_session_SCRIPTS += src/thunderbird/lib/post-session/30thunderbird
+lib_pre_session_SCRIPTS += src/thunderbird/lib/pre-session/70thunderbird
+lib_update_SCRIPTS += src/thunderbird/lib/update/21thunderbird
+
+CLEANFILES += \
+  src/thunderbird/lib/post-session/30thunderbird \
+  src/thunderbird/lib/pre-session/70thunderbird \
+  src/thunderbird/lib/update/21thunderbird
+EXTRA_DIST += \
+  src/thunderbird/lib/post-session/30thunderbird.in \
+  src/thunderbird/lib/pre-session/70thunderbird.in \
+  src/thunderbird/lib/update/21thunderbird.in
 
 ################
 # xfce4
@@ -184,13 +266,13 @@ xdg_Terminaldir = $(xdgdir)/Terminal
 xdg_Thunardir = $(xdgdir)/Thunar
 
 dist_applications_DATA += src/xfce4/applications/printing.desktop
-bin_PROGRAMS += detect-dvd
+bin_SCRIPTS += detect-dvd
 
 dist_gvfs_mounts_DATA = src/xfce4/gvfs/mounts/network.mount
 
 dist_data_admin_skel_menus_DATA += src/xfce4/data/admin-skel/.config/menus/xfce-applications.menu
 
-lib_pre_session_PROGRAMS += src/xfce4/lib/pre-session/55xfce4
+lib_pre_session_SCRIPTS += src/xfce4/lib/pre-session/55xfce4
 
 dist_xdg_DATA += src/xfce4/xdg/user-dirs.conf
 dist_xdg_autostart_DATA += src/xfce4/xdg/autostart/detect-dvd.desktop
@@ -213,3 +295,10 @@ dist_xdg_xfce_xml_DATA = \
   src/xfce4/xdg/xfce4/xfconf/xfce-perchannel-xml/thunar.xml \
   src/xfce4/xdg/xfce4/xfconf/xfce-perchannel-xml/xfwm4.xml \
   src/xfce4/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-power-manager.xml
+
+CLEANFILES += \
+  src/xfce4/bin/detect-dvd \
+  src/xfce4/lib/pre-session/55xfce4
+EXTRA_DIST += \
+  src/xfce4/bin/detect-dvd.in \
+  src/xfce4/lib/pre-session/55xfce4.in
