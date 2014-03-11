@@ -1,5 +1,5 @@
-applicationsdir = $(datadir)/applications
-iconsdir = $(datadir)/pixmaps
+applicationsdir = @applicationsdir@
+iconsdir = @iconsdir@
 
 configdir = $(sysconfdir)/karoshi-client
 config_variablesdir = $(configdir)/variables
@@ -14,9 +14,9 @@ data_offlinedir = $(pkgdatadir)/offline
 data_admin_skeldir = $(pkgdatadir)/admin-skel
 data_admin_skel_menusdir = $(data_admin_skeldir)/.config/menus
 
-sudoersdir = $(sysconfdir)/sudoers.d
+sudoersdir = @sudoersdir@
 
-xdgdir = $(sysconfdir)/xdg
+xdgdir = @xdgdir@
 xdg_menusdir = $(xdgdir)/menus
 xdg_autostartdir = $(xdgdir)/autostart
 
@@ -163,7 +163,9 @@ EXTRA_DIST = \
 # cups
 ################
 
-cups_backenddir = $(libdir)/cups/backend
+if CUPS
+
+cups_backenddir = @cups_libdir@/backend
 
 dist_cups_backend_DATA = src/cups/backend/ksmb
 dist_sudoers_DATA += src/cups/sudoers.d/99ksmb
@@ -178,9 +180,13 @@ EXTRA_DIST += \
   src/cups/lib/services/cups-config.in \
   src/cups/lib/update/05cups.in
 
+endif
+
 ################
 # firefox
 ################
+
+if FIREFOX
 
 lib_post_session_SCRIPTS += src/firefox/lib/post-session/30firefox
 lib_pre_session_SCRIPTS += src/firefox/lib/pre-session/70firefox
@@ -195,9 +201,13 @@ EXTRA_DIST += \
   src/firefox/lib/pre-session/70firefox.in \
   src/firefox/lib/update/20firefox.in
 
+endif
+
 ################
 # firewall
 ################
+
+if FIREWALL
 
 bin_SCRIPTS += src/firewall/bin/generate-firewall-rules
 lib_update_SCRIPTS += src/firewall/lib/update/04firewall
@@ -209,12 +219,16 @@ EXTRA_DIST += \
   src/firewall/bin/generate-firewall-rules.in \
   src/firewall/lib/update/04firewall.in
 
+endif
+
 ################
 # lightdm
 ################
 
-lightdm_confdir = $(sysconfdir)/lightdm
-lightdm_themedir = $(datadir)/kde4/apps/lightdm-kde-greeter/themes
+if LIGHTDM
+
+lightdm_confdir = @lightdm_confdir@
+lightdm_themedir = @lightdm_kde_themesdir@
 lightdm_theme_karoshidir = $(lightdm_themedir)/karoshi-classic
 
 dist_lightdm_conf_DATA = \
@@ -228,11 +242,15 @@ dist_lightdm_theme_karoshi_DATA = \
   src/lightdm/theme/preview.png \
   src/lightdm/theme/theme.rc
 
+endif
+
 ################
 # thunderbird
 ################
 
-thunderbird_extensiondir = /usr/lib/mozilla/extensions/{3550f703-e582-4d05-9a08-453d09bdfdc6}
+if THUNDERBIRD
+
+thunderbird_extensiondir = @thunderbird_extensionsdir@
 
 install-data-hook:
 	$(MKDIR_P) "$(thunderbird_extensiondir)/{9533f794-00b4-4354-aa15-c2bbda6989f8}"
@@ -253,11 +271,18 @@ EXTRA_DIST += \
   src/thunderbird/lib/pre-session/70thunderbird.in \
   src/thunderbird/lib/update/21thunderbird.in
 
+endif
+
 ################
 # xfce4
 ################
 
-gvfs_mountsdir = $(libdir)/gvfs/mounts
+if XFCE
+
+if GVFS
+gvfs_mountsdir = @gvfs_libdir@/mounts
+dist_gvfs_mounts_DATA = src/xfce4/gvfs/mounts/network.mount
+endif
 
 xdg_xfcedir = $(xdgdir)/xfce4
 xdg_xfce_paneldir = $(xdg_xfcedir)/panel
@@ -267,8 +292,6 @@ xdg_Thunardir = $(xdgdir)/Thunar
 
 dist_applications_DATA += src/xfce4/applications/printing.desktop
 bin_SCRIPTS += src/xfce4/bin/detect-dvd
-
-dist_gvfs_mounts_DATA = src/xfce4/gvfs/mounts/network.mount
 
 dist_data_admin_skel_menus_DATA += src/xfce4/data/admin-skel/.config/menus/xfce-applications.menu
 
@@ -301,3 +324,5 @@ CLEANFILES += \
 EXTRA_DIST += \
   src/xfce4/bin/detect-dvd \
   src/xfce4/lib/pre-session/55xfce4.in
+
+endif
