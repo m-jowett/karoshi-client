@@ -163,9 +163,9 @@ EXTRA_DIST = \
 # cups
 ################
 
-if CUPS
-
 cups_backenddir = @cups_libdir@/backend
+
+if CUPS
 
 dist_cups_backend_DATA = src/cups/backend/ksmb
 dist_sudoers_DATA += src/cups/sudoers.d/99ksmb
@@ -225,11 +225,11 @@ endif
 # lightdm
 ################
 
-if LIGHTDM
-
 lightdm_confdir = @lightdm_confdir@
 lightdm_themedir = @lightdm_kde_themesdir@
 lightdm_theme_karoshidir = $(lightdm_themedir)/karoshi-classic
+
+if LIGHTDM
 
 dist_lightdm_conf_DATA = \
   src/lightdm/config/lightdm.conf \
@@ -248,9 +248,9 @@ endif
 # thunderbird
 ################
 
-if THUNDERBIRD
-
 thunderbird_extensiondir = @thunderbird_extensionsdir@
+
+if THUNDERBIRD
 
 install-data-hook:
 	$(MKDIR_P) "$(thunderbird_extensiondir)/{9533f794-00b4-4354-aa15-c2bbda6989f8}"
@@ -277,18 +277,19 @@ endif
 # xfce4
 ################
 
-if XFCE
-
-if GVFS
 gvfs_mountsdir = @gvfs_libdir@/mounts
-dist_gvfs_mounts_DATA = src/xfce4/gvfs/mounts/network.mount
-endif
 
 xdg_xfcedir = $(xdgdir)/xfce4
 xdg_xfce_paneldir = $(xdg_xfcedir)/panel
 xdg_xfce_xmldir = $(xdg_xfcedir)/xfconf/xfce-perchannel-xml
 xdg_Terminaldir = $(xdgdir)/Terminal
 xdg_Thunardir = $(xdgdir)/Thunar
+
+if XFCE
+
+if GVFS
+dist_gvfs_mounts_DATA = src/xfce4/gvfs/mounts/network.mount
+endif
 
 dist_applications_DATA += src/xfce4/applications/printing.desktop
 bin_SCRIPTS += src/xfce4/bin/detect-dvd
