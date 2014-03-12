@@ -53,6 +53,7 @@ AM_INIT_AUTOMAKE([subdir-objects -Wno-portability])
 
 AC_PROG_MKDIR_P
 AC_PROG_SED
+AC_PROG_LN_S
 AX_PATH_PROG_OR_FAIL([UNZIP], [unzip])
 
 # Features

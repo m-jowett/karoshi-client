@@ -21,43 +21,49 @@ xdg_menusdir = $(xdgdir)/menus
 xdg_autostartdir = $(xdgdir)/autostart
 
 #Substitution rule
+subst_rule = -e '/[@]makefile_in[@]/d' \
+  -e 's,[@]prefix[@],$(prefix),g' \
+  -e 's,[@]bindir[@],$(bindir),g' \
+  -e 's,[@]libdir[@],$(libdir),g' \
+  -e 's,[@]pkglibdir[@],$(pkglibdir),g' \
+  -e 's,[@]pkglibexecdir[@],$(pkglibexecdir),g' \
+  -e 's,[@]datadir[@],$(datadir),g' \
+  -e 's,[@]pkgdatadir[@],$(pkgdatadir),g' \
+  -e 's,[@]mandir[@],$(mandir),g' \
+  -e 's,[@]infodir[@],$(infodir),g' \
+  -e 's,[@]docdir[@],$(docdir),g' \
+  -e 's,[@]sysconfdir[@],$(sysconfdir),g' \
+  -e 's,[@]localstatedir[@],$(localstatedir),g' \
+  \
+  -e 's,[@]applicationsdir[@],$(applicationsdir),g' \
+  -e 's,[@]iconsdir[@],$(iconsdir),g' \
+  -e 's,[@]configdir[@],$(configdir),g' \
+  -e 's,[@]sudoersdir[@],$(sudoersdir),g' \
+  -e 's,[@]xdgdir[@],$(xdgdir),g'
 
 %: %.in
-	$(SED) $< > $@ \
-	  -e '/[@]makefile_in[@]/d' \
-	  -e 's,[@]prefix[@],$(prefix),g' \
-	  -e 's,[@]bindir[@],$(bindir),g' \
-	  -e 's,[@]libdir[@],$(libdir),g' \
-	  -e 's,[@]pkglibdir[@],$(pkglibdir),g' \
-	  -e 's,[@]pkglibexecdir[@],$(pkglibexecdir),g' \
-	  -e 's,[@]datadir[@],$(datadir),g' \
-	  -e 's,[@]pkgdatadir[@],$(pkgdatadir),g' \
-	  -e 's,[@]mandir[@],$(mandir),g' \
-	  -e 's,[@]infodir[@],$(infodir),g' \
-	  -e 's,[@]docdir[@],$(docdir),g' \
-	  -e 's,[@]sysconfdir[@],$(sysconfdir),g' \
-	  -e 's,[@]localstatedir[@],$(localstatedir),g' \
-	  \
-	  -e 's,[@]applicationsdir[@],$(applicationsdir),g' \
-	  -e 's,[@]iconsdir[@],$(iconsdir),g' \
-	  -e 's,[@]configdir[@],$(configdir),g' \
-	  -e 's,[@]sudoersdir[@],$(sudoersdir),g' \
-	  -e 's,[@]xdgdir[@],$(xdgdir),g'
+	$(SED) $< > $@ $(subst_rule)
+
+karoshi-%: %.in
+	$(SED) $< > $@ $(subst_rule)
+
+karoshi-%: %
+	(cd $(dir $@) && $(LN_S) $(notdir $<) $(notdir $@))
 
 ################
 # core
 ################
 
-dist_applications_DATA = \
-  src/core/applications/change-admin-password.desktop \
-  src/core/applications/manage-flags.desktop \
-  src/core/applications/set-location.desktop
-dist_icons_DATA = \
-  src/core/icons/change-password.png \
-  src/core/icons/moodle.png \
-  src/core/icons/set-location.png \
-  src/core/icons/set-network.png \
-  src/core/icons/smalllogo.png
+applications_DATA = \
+  src/core/applications/karoshi-change-admin-password.desktop \
+  src/core/applications/karoshi-manage-flags.desktop \
+  src/core/applications/karoshi-set-location.desktop
+icons_DATA = \
+  src/core/icons/karoshi-change-password.png \
+  src/core/icons/karoshi-moodle.png \
+  src/core/icons/karoshi-set-location.png \
+  src/core/icons/karoshi-set-network.png \
+  src/core/icons/karoshi-smalllogo.png
 
 dist_config_DATA =
 dist_config_variables_DATA = src/core/config/variables/core
@@ -102,10 +108,10 @@ dist_xdg_menus_DATA =
 dist_xdg_autostart_DATA =
 
 bin_SCRIPTS = \
-  src/core/bin/manage-flags \
-  src/core/bin/notify-shutdown \
-  src/core/bin/set-local-password \
-  src/core/bin/set-location
+  src/core/bin/karoshi-manage-flags \
+  src/core/bin/karoshi-notify-shutdown \
+  src/core/bin/karoshi-set-local-password \
+  src/core/bin/karoshi-set-location
 
 CLEANFILES = \
   src/core/lib/common \
@@ -128,10 +134,18 @@ CLEANFILES = \
   src/core/lib/update/00core \
   src/core/lib/update/01offline \
   src/core/lib/update/05shutdown \
-  src/core/bin/manage-flags \
-  src/core/bin/notify-shutdown \
-  src/core/bin/set-local-password \
-  src/core/bin/set-location
+  src/core/bin/karoshi-manage-flags \
+  src/core/bin/karoshi-notify-shutdown \
+  src/core/bin/karoshi-set-local-password \
+  src/core/bin/karoshi-set-location \
+  src/core/applications/karoshi-change-admin-password.desktop \
+  src/core/applications/karoshi-manage-flags.desktop \
+  src/core/applications/karoshi-set-location.desktop \
+  src/core/icons/karoshi-change-password.png \
+  src/core/icons/karoshi-moodle.png \
+  src/core/icons/karoshi-set-location.png \
+  src/core/icons/karoshi-set-network.png \
+  src/core/icons/karoshi-smalllogo.png
 
 EXTRA_DIST = \
   src/core/lib/common.in \
@@ -157,7 +171,15 @@ EXTRA_DIST = \
   src/core/bin/manage-flags.in \
   src/core/bin/notify-shutdown.in \
   src/core/bin/set-local-password.in \
-  src/core/bin/set-location.in
+  src/core/bin/set-location.in \
+  src/core/applications/change-admin-password.desktop \
+  src/core/applications/manage-flags.desktop \
+  src/core/applications/set-location.desktop \
+  src/core/icons/change-password.png \
+  src/core/icons/moodle.png \
+  src/core/icons/set-location.png \
+  src/core/icons/set-network.png \
+  src/core/icons/smalllogo.png
 
 ################
 # cups
@@ -209,11 +231,11 @@ endif
 
 if FIREWALL
 
-bin_SCRIPTS += src/firewall/bin/generate-firewall-rules
+bin_SCRIPTS += src/firewall/bin/karoshi-generate-firewall-rules
 lib_update_SCRIPTS += src/firewall/lib/update/04firewall
 
 CLEANFILES += \
-  src/firewall/bin/generate-firewall-rules \
+  src/firewall/bin/karoshi-generate-firewall-rules \
   src/firewall/lib/update/04firewall
 EXTRA_DIST += \
   src/firewall/bin/generate-firewall-rules.in \
@@ -291,8 +313,8 @@ if GVFS
 dist_gvfs_mounts_DATA = src/xfce4/gvfs/mounts/network.mount
 endif
 
-dist_applications_DATA += src/xfce4/applications/printing.desktop
-bin_SCRIPTS += src/xfce4/bin/detect-dvd
+applications_DATA += src/xfce4/applications/karoshi-printing.desktop
+bin_SCRIPTS += src/xfce4/bin/karoshi-detect-dvd
 
 dist_data_admin_skel_menus_DATA += src/xfce4/data/admin-skel/.config/menus/xfce-applications.menu
 
@@ -321,9 +343,11 @@ dist_xdg_xfce_xml_DATA = \
   src/xfce4/xdg/xfce4/xfconf/xfce-perchannel-xml/xfce4-power-manager.xml
 
 CLEANFILES += \
-  src/xfce4/lib/pre-session/55xfce4
+  src/xfce4/bin/karoshi-detect-dvd \
+  src/xfce4/lib/pre-session/55xfce4 \
+  src/xfce4/applications/karoshi-printing.desktop
 EXTRA_DIST += \
-  src/xfce4/bin/detect-dvd \
-  src/xfce4/lib/pre-session/55xfce4.in
-
+  src/xfce4/bin/detect-dvd.in \
+  src/xfce4/lib/pre-session/55xfce4.in \
+  src/xfce4/applications/printing.desktop
 endif
