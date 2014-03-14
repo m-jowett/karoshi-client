@@ -22,6 +22,8 @@ xdgdir = @xdgdir@
 xdg_menusdir = $(xdgdir)/menus
 xdg_autostartdir = $(xdgdir)/autostart
 
+thunderbird_extensiondir = @thunderbird_extensionsdir@
+
 #Substitution rule
 subst_rule = -e '/[@]makefile_in[@]/d' \
   -e 's,[@]prefix[@],$(prefix),g' \
@@ -42,7 +44,8 @@ subst_rule = -e '/[@]makefile_in[@]/d' \
   -e 's,[@]applicationsdir[@],$(applicationsdir),g' \
   -e 's,[@]iconsdir[@],$(iconsdir),g' \
   -e 's,[@]sudoersdir[@],$(sudoersdir),g' \
-  -e 's,[@]xdgdir[@],$(xdgdir),g'
+  -e 's,[@]xdgdir[@],$(xdgdir),g' \
+  -e 's,[@]thunderbird_extensiondir[@],$(thunderbird_extensiondir),g'
 
 %: %.in
 	$(SED) $< > $@ $(subst_rule)
@@ -272,8 +275,6 @@ endif
 ################
 # thunderbird
 ################
-
-thunderbird_extensiondir = @thunderbird_extensionsdir@
 
 if THUNDERBIRD
 
