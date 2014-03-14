@@ -18,7 +18,7 @@
 #You should have received a copy of the GNU Affero General Public License
 #along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
 
-source "@pkgconfdir@/variables.core"
+source "@pkgconfdir@/variables/core"
 
 ####################
 #Refresh client information
@@ -27,7 +27,7 @@ IFS=$'\n'
 [[ -f /tmp/netlogon/domain_information/print_server ]] && read -r -d $'\0' PRINTSERVER _ < /tmp/netlogon/domain_information/print_server
 unset IFS
 
-echo "PRINTSERVER=$PRINTSERVER" > "@pkgconfdir@/variables.cups"
+echo "PRINTSERVER=$PRINTSERVER" > "@pkgconfdir@/variables/cups"
 
 ############################
 #Get printers

@@ -20,8 +20,8 @@
 
 set -e
 
-source "@pkgconfdir@/core/variables"
-source "@pkgconfdir@/cups/variables"
+source "@pkgconfdir@/variables/core"
+source "@pkgconfdir@/variables/cups"
 
 #Remove all Karoshi-configured printers
 while read -r printer _; do

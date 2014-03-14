@@ -22,7 +22,7 @@ set -e
 
 karoshi-manage-flags get domainset >/dev/null
 
-source "@pkgconfdir@/core/variables"
+source "@pkgconfdir@/variables/core"
 
 #Check if version has been set
 if [[ -z $LINUX_VERSION ]]; then
