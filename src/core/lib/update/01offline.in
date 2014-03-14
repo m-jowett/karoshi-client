@@ -22,6 +22,6 @@ set -e
 
 #Add offline home entry
 [[ -f /etc/security/pam_mount.conf.xml ]] && sed -i "\@</pam_mount>@ i\\
-<volume uid='1000-10000000' path='@localstatedir@lib/karoshi/offline/users/%(USER)' mountpoint='~/offline-home' options='bind' />" /etc/security/pam_mount.conf.xml
+<volume uid='1000-10000000' path='@pkgstatedir@/offline/users/%(USER)' mountpoint='~/offline-home' options='bind' />" /etc/security/pam_mount.conf.xml
 
 

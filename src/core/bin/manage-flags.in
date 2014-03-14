@@ -20,7 +20,7 @@
 
 set -e
 
-flagsDir="@sysconfdir@/karoshi/flags"
+flagsDir="@pkgconfdir@/flags"
 
 if [[ ! -d $flagsDir ]]; then
 	echo "Warning: flagsDir $flagsDir did not exist" >&2

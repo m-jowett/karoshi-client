@@ -33,7 +33,7 @@ if $is_domain; then
 	else
 		if $offline_home_exists; then
 			echo "Setting offline home area to be removed"
-			echo "delete" > "@localstatedir@/lib/karoshi/offline/flags/$USER"
+			echo "delete" > "@pkgstatedir@/offline/flags/$USER"
 		fi
 	fi
 fi

@@ -20,19 +20,19 @@
 
 set -e
 
-source "@sysconfdir@/karoshi/core/variables"
-source "@sysconfdir@/karoshi/cups/variables"
+source "@pkgconfdir@/core/variables"
+source "@pkgconfdir@/cups/variables"
 
 #Remove all Karoshi-configured printers
 while read -r printer _; do
 	lpadmin -x $printer
-done < <("@sysconfdir@/karoshi/cups/printers")
+done < <("@pkgconfdir@/cups/printers")
 
-> "@sysconfdir@/karoshi/cups/printers"
+> "@pkgconfdir@/cups/printers"
 
 #Assign printers depending on the location
-if [[ $LOCATION ]] && [[ $PRINTSERVER ]] && [[ -f "@localstatedir@/lib/karoshi/cups/list" ]]; then
-	printerList=$(< "@localstatedir@/lib/karoshi/cups/list")
+if [[ $LOCATION ]] && [[ $PRINTSERVER ]] && [[ -f "@pkgstatedir@/cups/list" ]]; then
+	printerList=$(< "@pkgstatedir@/cups/list")
 	if [[ $printerList ]]; then
 		read -r defaultPrinter _ <<< "$printerList"
 		while read -r printer _; do
@@ -41,9 +41,9 @@ if [[ $LOCATION ]] && [[ $PRINTSERVER ]] && [[ -f "@localstatedir@/lib/karoshi/c
 			else
 				lpadmin -p $printer -v ksmb://$PRINTSERVER.$DNSSUFFIX/$printer -L "$LOCATION" -D "$printer" -E
 			fi
-			echo "$printer" >> "@sysconfdir@/karoshi/cups/printers"
+			echo "$printer" >> "@pkgconfdir@/cups/printers"
 			#Copy PPD
-			[[ -f "@localstatedir@/lib/karoshi/cups/$printer.ppd" ]] && lpadmin -p $printer -P "@localstatedir@/lib/karoshi/cups/$printer.ppd"
+			[[ -f "@pkgstatedir@/cups/$printer.ppd" ]] && lpadmin -p $printer -P "@pkgstatedir@/cups/$printer.ppd"
 		done <<< "$printerList"
 		lpadmin -d $defaultPrinter
 	fi

@@ -1,8 +1,10 @@
 applicationsdir = @applicationsdir@
 iconsdir = @iconsdir@
 
-configdir = $(sysconfdir)/karoshi-client
-config_variablesdir = $(configdir)/variables
+pkgconfdir = $(sysconfdir)/karoshi-client
+pkgstatedir = $(localstatedir)/lib/karoshi-client
+
+pkgconf_variablesdir = $(pkgconfdir)/variables
 
 lib_pamdir = $(pkglibexecdir)/pam
 lib_updatedir = $(pkglibexecdir)/update
@@ -33,11 +35,12 @@ subst_rule = -e '/[@]makefile_in[@]/d' \
   -e 's,[@]infodir[@],$(infodir),g' \
   -e 's,[@]docdir[@],$(docdir),g' \
   -e 's,[@]sysconfdir[@],$(sysconfdir),g' \
+  -e 's,[@]pkgconfdir[@],$(pkgconfdir),g' \
   -e 's,[@]localstatedir[@],$(localstatedir),g' \
+  -e 's,[@]pkgstatedir[@],$(pkgstatedir),g' \
   \
   -e 's,[@]applicationsdir[@],$(applicationsdir),g' \
   -e 's,[@]iconsdir[@],$(iconsdir),g' \
-  -e 's,[@]configdir[@],$(configdir),g' \
   -e 's,[@]sudoersdir[@],$(sudoersdir),g' \
   -e 's,[@]xdgdir[@],$(xdgdir),g'
 
@@ -65,8 +68,8 @@ icons_DATA = \
   src/core/icons/karoshi-set-network.png \
   src/core/icons/karoshi-smalllogo.png
 
-dist_config_DATA =
-dist_config_variables_DATA = src/core/config/variables/core
+dist_pkgconf_DATA =
+dist_pkgconf_variables_DATA = src/core/config/variables/core
 
 pkglibexec_SCRIPTS = \
   src/core/lib/common \

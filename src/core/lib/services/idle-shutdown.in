@@ -25,7 +25,7 @@ if [[ -z $XAUTHORITY ]] || [[ -z $DISPLAY ]]; then
 	exit 1
 fi
 
-source "@sysconfdir@/karoshi/shutdown/variables"
+source "@pkgconfdir@/shutdown/variables"
 
 #Ensure value of IDLESHUTDOWNTIME
 : ${IDLESHUTDOWNTIME=0}

@@ -24,7 +24,7 @@ if karoshi-manage-flags get no_multicast >/dev/null; then
 	exit 250
 fi
 
-[[ -f "@localstatedir@/karoshi/keyring.gpg" ]]
+[[ -f "@pkgstatedir@/keyring.gpg" ]]
 
 #Listen for message of length up to 64KiB
 data=$(perl -e << EOF
@@ -40,7 +40,7 @@ EOF
 
 #Check integrity of message
 echo "Checking integrity of message length ${#data}"
-gpg --batch --no-default-keyring --keyring "@localstatedir@/karoshi/keyring.gpg" --verify <<< "$data"
+gpg --batch --no-default-keyring --keyring "@pkgstatedir@/keyring.gpg" --verify <<< "$data"
 #Execute
 echo "Received authentic message, executing"
 command=$(sed -n '4,/^-----BEGIN PGP SIGNATURE-----$/ { /^-----BEGIN PGP SIGNATURE-----$/d; s/^- //; p; }' <<< "$data")

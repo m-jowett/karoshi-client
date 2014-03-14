@@ -20,7 +20,7 @@
 
 set -e
 
-[[ -d "@localstatedir@/lib/karoshi/offline" ]]
+[[ -d "@pkgstatedir@/offline" ]]
 
 if [[ ! $PAM_USER ]]; then
 	echo "ERROR: Must be run through pam_exec.so" >&2
@@ -38,13 +38,13 @@ user_gid=$(cut -d":" -f4 <<< "$user_info")
 user_home=$(cut -d":" -f6 <<< "$user_info")
 
 #Check for required directories
-if [[ ! -d "@localstatedir@/lib/karoshi/offline/users" ]]; then
-	echo "@localstatedir@/lib/karoshi/offline/users did not exist - creating"
-	mkdir "@localstatedir@/lib/karoshi/offline/users" -m 0755
+if [[ ! -d "@pkgstatedir@/offline/users" ]]; then
+	echo "@pkgstatedir@/offline/users did not exist - creating"
+	mkdir "@pkgstatedir@/offline/users" -m 0755
 fi
-if [[ ! -d "@localstatedir@/lib/karoshi/offline/flags" ]]; then
-	echo "@localstatedir@/lib/karoshi/offline/flags did not exist - creating"
-	mkdir "@localstatedir@/lib/karoshi/offline/flags" -m 0711
+if [[ ! -d "@pkgstatedir@/offline/flags" ]]; then
+	echo "@pkgstatedir@/offline/flags did not exist - creating"
+	mkdir "@pkgstatedir@/offline/flags" -m 0711
 fi
 
 if ! [[ $user_uid -ge 1000 ]]; then
@@ -52,19 +52,19 @@ if ! [[ $user_uid -ge 1000 ]]; then
 fi
 
 if karoshi-manage-flags get offline_mode >/dev/null; then
-	if [[ ! -d "@localstatedir@/lib/karoshi/offline/users/$PAM_USER" ]]; then
+	if [[ ! -d "@pkgstatedir@/offline/users/$PAM_USER" ]]; then
 		echo "Creating offline home directory for $PAM_USER"
-		mkdir "@localstatedir@/lib/karoshi/offline/users/$PAM_USER" -m 0700
-		chown $user_uid:$user_gid "@localstatedir@/lib/karoshi/offline/users/$PAM_USER"
+		mkdir "@pkgstatedir@/offline/users/$PAM_USER" -m 0700
+		chown $user_uid:$user_gid "@pkgstatedir@/offline/users/$PAM_USER"
 	fi
-	touch "@localstatedir@/lib/karoshi/offline/flags/$PAM_USER"
-	chown $user_uid:$user_gid "@localstatedir@/lib/karoshi/offline/flags/$PAM_USER"
-	chmod 0600 "@localstatedir@/lib/karoshi/offline/flags/$PAM_USER"
+	touch "@pkgstatedir@/offline/flags/$PAM_USER"
+	chown $user_uid:$user_gid "@pkgstatedir@/offline/flags/$PAM_USER"
+	chmod 0600 "@pkgstatedir@/offline/flags/$PAM_USER"
 else
-	if [[ -f "@localstatedir@/lib/karoshi/offline/flags/$PAM_USER" ]] && [[ $(< "@localstatedir@/lib/karoshi/offline/flags/$PAM_USER") == "delete" ]]; then
+	if [[ -f "@pkgstatedir@/offline/flags/$PAM_USER" ]] && [[ $(< "@pkgstatedir@/offline/flags/$PAM_USER") == "delete" ]]; then
 		#Remove offline home directory
 		echo "Detected stale offline home directory - removing"
-		rm -rf "@localstatedir@/lib/karoshi/offline/users/$PAM_USER"
-		rm -rf "@localstatedir@/lib/karoshi/offline/flags/$PAM_USER"
+		rm -rf "@pkgstatedir@/offline/users/$PAM_USER"
+		rm -rf "@pkgstatedir@/offline/flags/$PAM_USER"
 	fi
 fi

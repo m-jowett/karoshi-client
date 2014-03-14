@@ -18,7 +18,7 @@
 #You should have received a copy of the GNU Affero General Public License
 #along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
 
-source "@sysconfdir@/karoshi/core/variables"
+source "@pkgconfdir@/core/variables"
 
 #Force update time from server
 echo "Setting time from $PDC.$DNSSUFFIX"

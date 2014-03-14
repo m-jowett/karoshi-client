@@ -20,12 +20,12 @@
 
 set -e
 
-[[ -d "@localstatedir@/lib/karoshi/firefox" ]]
+[[ -d "@pkgstatedir@/firefox" ]]
 
 #Copy domain CA certificate
-if [[ -f "@localstatedir@/lib/karoshi/firefox/cacert.pem" ]]; then
-	rm -f "@localstatedir@/lib/karoshi/firefox/cacert.pem"
+if [[ -f "@pkgstatedir@/firefox/cacert.pem" ]]; then
+	rm -f "@pkgstatedir@/firefox/cacert.pem"
 fi
 if [[ -f /tmp/netlogon/domain_information/cacert.pem ]]; then
-	cp /tmp/netlogon/domain_information/cacert.pem "@localstatedir@/lib/karoshi/firefox/"
+	cp /tmp/netlogon/domain_information/cacert.pem "@pkgstatedir@/firefox/"
 fi

@@ -18,15 +18,15 @@
 #You should have received a copy of the GNU Affero General Public License
 #along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
 
-source "@sysconfdir@/karoshi/variables/core"
+source "@pkgconfdir@/variables/core"
 
 #create user.js for default Firefox settings
 if $is_domain && which firefox >/dev/null && [[ -d ~/.mozilla/firefox ]]; then
 	firefox_profile=$(sed -n '0,/^Path=/s/^Path=//p' ~/.mozilla/firefox/profiles.ini)
 	if [[ $firefox_profile ]] && [[ -d ~/.mozilla/firefox/$firefox_profile ]]; then
 		#Apply CA certificate
-		if [[ -f "@localstatedir@/lib/karoshi/firefox/cacert.pem" ]]; then
-			certutil -A -n "Karoshi CA" -addstore root -t "CTu,CTu,CTu" -i "@localstatedir@/lib/karoshi/firefox/cacert.pem" -d ~/.mozilla/firefox/"$firefox_profile"
+		if [[ -f "@pkgstatedir@/firefox/cacert.pem" ]]; then
+			certutil -A -n "Karoshi CA" -addstore root -t "CTu,CTu,CTu" -i "@pkgstatedir@/firefox/cacert.pem" -d ~/.mozilla/firefox/"$firefox_profile"
 		fi
 
 		#Default download directory
