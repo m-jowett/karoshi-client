@@ -20,12 +20,12 @@ AC_INIT([Karoshi Client], [4.0], [rmccorkell@karoshi.org.uk], [karoshi-client], 
 AC_PREREQ([2.61])
 
 # Defines
-AC_DEFUN([AX_PATH_PROG_OR_FAIL],
-[AC_PATH_PROG([$1], [$2], [no])
-if test x"${$1}" == x"no"
-then
-	AC_MSG_ERROR([Unable to find $2, please install $2])
-fi])
+AC_DEFUN([AX_PROG],
+[AC_ARG_VAR(translit([$1], [a-z], [A-Z]), [path to $1])
+AC_PATH_PROG(translit([$1], [a-z], [A-Z]), [$1], [no])
+AS_IF([test x"${]translit([$1], [a-z], [A-Z])[}" == x"no"],
+	[AC_MSG_ERROR([Unable to find $1, please install $1 or specify using ]translit([$1], [a-z], [A-Z])[=<path>])])
+])
 
 AC_DEFUN([AX_FEATURE],
 [AC_ARG_ENABLE([$1],
@@ -54,7 +54,7 @@ AM_INIT_AUTOMAKE([subdir-objects -Wno-portability])
 AC_PROG_MKDIR_P
 AC_PROG_SED
 AC_PROG_LN_S
-AX_PATH_PROG_OR_FAIL([UNZIP], [unzip])
+AX_PROG([unzip])
 
 # Features
 AX_FEATURE([cups], [CUPS printing support], [CUPS])
