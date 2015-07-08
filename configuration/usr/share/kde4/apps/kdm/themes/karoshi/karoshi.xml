@@ -15,7 +15,8 @@
 		<normal file="background.png" scalemode="scale"/>
 		<pos x="0" y="0" width="100%" height="100%"/>
 	</item>
-<!--		
+<!--	
+	Testing	
 	<item type="pixmap" id="system-session">
 		<normal file="rectangle.png"/>
 		<pos anchor="c" x="50%" y="50%" width="416" height="262"/>
