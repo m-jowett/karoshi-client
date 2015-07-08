@@ -16,11 +16,11 @@ thunar-media-tags-plugin
 catfish
 gnome-calculator
 gnome-system-monitor
-light-locker
+gnome-themes-standard-data
+xscreensaver
 
 #General Applications
-lightdm
-lightdm-gtk-greeter
+kdm
 firefox
 flashplugin-installer
 thunderbird

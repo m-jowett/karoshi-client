@@ -591,13 +591,51 @@ fi
 echo root > /etc/cron.allow
 echo root > /etc/at.allow
 
-#Enable trim support in fstab
+#Optimise fstab for SSD support
 for device in /dev/sd*; do
 	device_uuid=`blkid $device | sed 's@.*UUID="\([^"]*\)".*@\1@'`
 	if [[ $device_uuid ]] && [[ `hdparm -I $device | grep TRIM` ]]; then
-		sed -i "/swap\|discard,noatime/!s@\(UUID=$device_uuid[[:blank:]]\+[^[:blank:]]\+[[:blank:]]\+[^[:blank:]]\+[[:blank:]]\+[^[:blank:]]\+\)@\1,discard,noatime@" /etc/fstab
+		#Add in trim support if the partition is not swap.
+		mount_data=`grep ^UUID=$device_uuid /etc/fstab`
+		
+		if [[ `echo $mount_data | grep -c swap` = 0 ]] &&  [[ `echo $mount_data | grep -c noatime` = 0 ]]; then
+			#Add in noatime option
+			sed '/^UUID='$device_uuid'/s/discard/discard,noatime/g' -i /etc/fstab
+		fi
 	fi
 done
+
+
+#Create rc.local to enable trim 
+echo '#!/bin/sh -e
+#
+# rc.local
+#
+# This script is executed at the end of each multiuser runlevel.
+# Make sure that the script will "exit 0" on success or any other
+# value on error.
+#
+# In order to enable or disable this script just change the execution
+# bits.
+#
+# By default this script does nothing.
+fstrim /
+exit 0' > /etc/rc.local
+
+chmod 0755 /etc/rc.local
+
+#Disable Cron trim check since this only runs weekly.
+if [[ -f /etc/cron.weekly/fstrim ]]; then
+	rm -f /etc/cron.weekly/fstrim
+fi
+
+[ -f /etc/rc2.d/S99restartsssd ] && rm -f /etc/rc2.d/S99restartsssd
+
+#Configure pam_mkdir.so to run silently to stop the annoying info box when logging in with kdm.
+if [[ `grep -c silent /etc/pam.d/common-session` = 0 ]]
+then
+	sed -i 's/pam_mkhomedir.so umask=0077/pam_mkhomedir.so silent umask=0077/g' /etc/pam.d/common-session
+fi
 
 #Write new variables to file
 updateVariables
