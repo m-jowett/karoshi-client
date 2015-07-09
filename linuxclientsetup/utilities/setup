@@ -202,8 +202,8 @@ fi
 #Lightdm
 sed -i 's/^autologin/#autologin/' /etc/lightdm/lightdm.conf
 #Kdm
-sed -i 's/^AutoLoginEnable=true/AutoLoginEnable=false/' //etc/kde4/kdm/kdmrc
-sed -i 's/^AutoLoginUser=karoshi/AutoLoginUser=/' //etc/kde4/kdm/kdmrc
+sed -i 's/^AutoLoginEnable=true/AutoLoginEnable=false/' /etc/kde4/kdm/kdmrc
+sed -i 's/^AutoLoginUser=karoshi/AutoLoginUser=/' /etc/kde4/kdm/kdmrc
 
 #Stop running this script on administrator login
 [[ -f ~karoshi/.config/autostart/karoshi-setup.desktop ]] && rm -f ~karoshi/.config/autostart/karoshi-setup.desktop

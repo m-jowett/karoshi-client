@@ -629,8 +629,6 @@ if [[ -f /etc/cron.weekly/fstrim ]]; then
 	rm -f /etc/cron.weekly/fstrim
 fi
 
-[ -f /etc/rc2.d/S99restartsssd ] && rm -f /etc/rc2.d/S99restartsssd
-
 #Configure pam_mkdir.so to run silently to stop the annoying info box when logging in with kdm.
 if [[ `grep -c silent /etc/pam.d/common-session` = 0 ]]
 then
