@@ -16,11 +16,11 @@ thunar-media-tags-plugin
 catfish
 gnome-calculator
 gnome-system-monitor
-gnome-themes-standard-data
 xscreensaver
 
 #General Applications
-kdm
+lightdm
+lightdm-kde-greeter
 firefox
 flashplugin-installer
 thunderbird
@@ -84,6 +84,7 @@ icedtea-plugin
 liblwjgl-java
 arduino
 tmux
+scratch
 
 #Utilities
 cups
@@ -181,3 +182,4 @@ fonts-droid
 fonts-nanum-coding
 fonts-gargi
 myspell-en-gb
+

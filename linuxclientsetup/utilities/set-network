@@ -148,7 +148,7 @@ iface $NETWORKINT inet $ip_type" > /etc/network/interfaces
 function updateHostname {
 	[[ -z $CLIENT_NAME ]] && return
 	if [[ $DNSSUFFIX ]]; then
-		hostname=$CLIENT_NAME.$DNSSUFFIX
+		hostname=$CLIENT_NAME
 		hosts_line="$CLIENT_NAME.$DNSSUFFIX $CLIENT_NAME"
 	else
 		hostname=$CLIENT_NAME
