@@ -89,8 +89,8 @@ Item {
         imagePath: "widgets/background"
         anchors.centerIn: activeScreen;
 
-        width: childrenRect.width + 55;
-        height: childrenRect.height + 55;
+        width: childrenRect.width + 155;
+        height: childrenRect.height + 80;
 
         Column {
             spacing: 15
