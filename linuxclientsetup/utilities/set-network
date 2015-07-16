@@ -485,7 +485,11 @@ if [[ -f $netlogon_mount/domain_information/samba4 ]]; then
 	sed -i "s/CHANGETHISDOMAIN/$DOMAIN/g" /etc/samba/smb.conf
 	sed -i "s/CHANGETHISREALM/$dns_domain_caps/g" /etc/samba/smb.conf
 
+	#Make sure the time is correct before we join
+	net time set -S $PDC.$DNSSUFFIX
+
 	#Join domain
+	
 	echo 70 >&11
 	echo \#$"Joining domain" >&11
 

@@ -128,6 +128,11 @@ find /var/log/upstart -name 'karoshi-*.log*' -delete
 #Configure system
 ##################
 
+#Configure grub to hide the splash screen
+sed -i 's/^GRUB_TIMEOUT=10/GRUB_TIMEOUT=0/g' /etc/default/grub
+sed -i 's/^GRUB_HIDDEN_TIMEOUT/#GRUB_HIDDEN_TIMEOUT/g' /etc/default/grub
+update-grub
+
 #Create flag directory
 [[ -d /opt/karoshi/flags ]] || mkdir -p /opt/karoshi/flags
 
