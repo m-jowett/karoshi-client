@@ -57,11 +57,6 @@ deb-src http://ppa.launchpad.net/nilarimogard/webupd8/ubuntu trusty main
 deb http://ppa.launchpad.net/ubuntu-wine/ppa/ubuntu trusty main
 deb-src http://ppa.launchpad.net/ubuntu-wine/ppa/ubuntu trusty main
 
-#### Xenopathic PPA - https://launchpad.net/~xenopathic/+archive/ppa/
-#!cmd apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 96EFFE86
-deb http://ppa.launchpad.net/xenopathic/ppa/ubuntu trusty main
-deb-src http://ppa.launchpad.net/xenopathic/ppa/ubuntu trusty main
-
 #### XFCE 4.12 PPA - https://launchpad.net/~xubuntu-dev/+archive/xfce-4.12/
 #!cmd apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 142986CE
 deb http://ppa.launchpad.net/xubuntu-dev/xfce-4.12/ubuntu trusty main

@@ -2,12 +2,6 @@
 
 #This script has been developed from the information at https://help.ubuntu.com/community/LiveCDCustomizationFromScratch
 
-KAROSHIVER=karoshi-client-v4.4-amd64
-KAROSHIVERNOCAPS=`echo $KAROSHIVER | tr 'A-Z' 'a-z'`
-BUILDPATH=/home/karoshi/$KAROSHIVERNOCAPS
-ARCH=amd64
-RELEASE=trusty
-
 clear
 
 #Exit if this is not the root user
@@ -16,6 +10,26 @@ then
 	echo -e "Karoshi Client Remaster Utility\n\nThis script must be run as root."
 	exit
 fi
+
+#Ask which architecture to build
+ARCH=amd64
+echo -e "Choose the architecture version you want to build\n\n1: amd64\n2: i386\n"
+read choice
+case $choice in
+	1)
+	ARCH=amd64
+	;;
+	2)
+	ARCH=i386
+esac
+
+KAROSHIVER=karoshi-client-v4.4
+KAROSHIVER=$KAROSHIVER-$ARCH
+KAROSHIVERNOCAPS=`echo $KAROSHIVER | tr 'A-Z' 'a-z'`
+BUILDPATH=/home/karoshi/$KAROSHIVERNOCAPS
+RELEASE=trusty
+BRANCH=lightdm-kg
+ZIPFILE=$BRANCH.zip
 
 echo -e "Karoshi Client Remaster Utility\n"
 
@@ -76,16 +90,16 @@ cd $BUILDPATH
 
 [ $RUNDEBOOSTRAP = yes ] && debootstrap --arch=$ARCH $RELEASE chroot
 
-echo -e "\nDownload serversetup\n"
+echo -e "\nDownload $ZIPFILE\n"
 sleep 1
-if [ -d chroot/opt/karoshi/karoshi-client ]
+if [ -d chroot/opt/karoshi/karoshi-client-$BRANCH ]
 then
 	echo -e "$BUILDPATH/chroot/opt/karoshi/karoshi-client exits\n\n1: Delete this folder and download the latest version\n2: Skip this step\n"
 	read choice
 	case $choice in
 		1)
 		getserversetup=yes
-		rm -f -R chroot/opt/karoshi/karoshi-client
+		rm -f -R chroot/opt/karoshi/karoshi-client-$BRANCH
 		;;
 		2)
 		getserversetup=no
@@ -99,33 +113,29 @@ fi
 
 if [ $getserversetup = yes ]
 then
-	[ -f /tmp/master.zip ] && rm -f /tmp/master.zip
+	[ -f /tmp/$ZIPFILE ] && rm -f /tmp/$ZIPFILE
 	cd /tmp
-	echo -e "\nDownloading master.zip from github.\n"
+	echo -e "\nDownloading $ZIPFILE from github.\n"
 	sleep 1
 	wget https://github.com/the-linux-schools-project/karoshi-client/archive/lightdm-kg.zip
 	if [ $? != 0 ]
 	then
-		echo -e "There was a problem downloading master.zip - exiting now."
+		echo -e "There was a problem downloading $ZIPFILE - exiting now."
 		exit
 	fi
 
-	echo -e "Unziping master.zip to $BUILDPATH/chroot/opt/karoshi\n"
+	echo -e "Unziping $ZIPFILE to $BUILDPATH/chroot/opt/karoshi\n"
 	sleep 1
-	unzip master.zip  -d $BUILDPATH/chroot/opt/karoshi/
+	unzip $ZIPFILE  -d $BUILDPATH/chroot/opt/karoshi/
 	if [ $? != 0 ]
 	then
-		echo -e "There was a problem unziping master.zip - exiting now."
+		echo -e "There was a problem unziping $ZIPFILE - exiting now."
 		exit
 	fi
-
-	#mv $BUILDPATH/chroot/opt/karoshi/karoshi-client-lightdm-kg/serversetup $BUILDPATH/chroot/opt/karoshi/
-	rm -f -R $BUILDPATH/chroot/opt/karoshi/karoshi-client-lightdm-kg
 
 	cd $BUILDPATH
 fi
 
-exit
 #Mount dev folder
 
 echo -e "\nMounting $BUILDPATH/chroot\n"
@@ -141,16 +151,13 @@ echo -e "Copying /etc/resolv.conf\n"
 cp /etc/resolv.conf chroot/etc/resolv.conf
 
 #Copy in sources.list if only a minimal list is there
-if [ `cat chroot/etc/apt/sources.list | wc -l` -lt 2 ]
-then
-	cp chroot/opt/karoshi/serversetup/distro/ubuntu/all/buildserver/configfiles/sources.list chroot/etc/apt/sources.list
-fi
+cp chroot/opt/karoshi/karoshi-client-$BRANCH/install/sources.list chroot/etc/apt/sources.list
 
 #Backup /sbin/initctl
 cp /sbin/initctl /sbin/initctl.$$
 
 #Run configure chroot
-chroot chroot /opt/karoshi/serversetup/distro/ubuntu/all/buildserver/configure_chroot
+chroot chroot /opt/karoshi/karoshi-client-$BRANCH/install/configure_chroot
 
 umount $BUILDPATH/chroot/dev 
 
@@ -189,7 +196,7 @@ cp /boot/memtest86+.bin image/install/memtest
 cp /usr/lib/syslinux/vesamenu.c32 image/isolinux/
 
 #Copy in boot splash
-cp -f chroot/opt/karoshi/serversetup/all/backgrounds/bootmenu.png image/isolinux/splash.png
+cp -f chroot/opt/karoshi/karoshi-client-$BRANCH/linuxclientsetup/images/boot-menu.png image/isolinux/splash.png
 
 #Create boot instructions
 echo -e "\nCreating boot instructions\n"
@@ -212,12 +219,12 @@ default vesamenu.c32
 prompt 0
 timeout 100
 
-menu title Karoshi Server
+menu title Karoshi Client
 menu background splash.png
 menu color title 1;37;44 #c0ffffff #00000000 std
 
 label install
-  menu label Install The Linux Schools Project Server
+  menu label Install The Linux Schools Project Client
   kernel /casper/vmlinuz
   append  file=/cdrom/preseed/custom.seed boot=casper automatic-ubiquity initrd=/casper/initrd.gz quiet splash vga=791 --
 
@@ -283,8 +290,8 @@ printf $(sudo du -sx --block-size=1 chroot | cut -f1) > image/casper/filesystem.
 echo '#define DISKNAME  '$KAROSHIVER'
 #define TYPE  binary
 #define TYPEbinary  1
-#define ARCH  amd64
-#define ARCHamd64  1
+#define ARCH  '$ARCH'
+#define ARCH'$ARCH'  1
 #define DISKNUM  1
 #define DISKNUM1  1
 #define TOTALNUM  0
