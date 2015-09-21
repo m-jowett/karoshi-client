@@ -74,9 +74,7 @@ brasero
 
 #Development
 codeblocks
-eclipse
 glade
-netbeans
 g++
 git
 default-jdk
@@ -85,6 +83,8 @@ liblwjgl-java
 arduino
 tmux
 scratch
+netbeans
+eclipse
 
 #Utilities
 cups

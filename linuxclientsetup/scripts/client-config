@@ -309,6 +309,15 @@ if [[ -L /usr/lib/firefox/dictionaries ]]; then
 	ln -s /usr/share/hunspell/"$machineLang".aff /usr/lib/firefox/dictionaries/"$machineLang".aff
 fi
 
+if [[ -L /usr/lib/thunderbird/dictionaries ]]; then
+        dpkg-divert --local --add /usr/lib/thunderbird/dictionaries
+	rm -rf /usr/lib/thunderbird/dictionaries
+	mkdir /usr/lib/thunderbird/dictionaries
+	ln -s /usr/share/hunspell/"$machineLang".dic /usr/lib/thunderbird/dictionaries/"$machineLang".dic
+	ln -s /usr/share/hunspell/"$machineLang".aff /usr/lib/thunderbird/dictionaries/"$machineLang".aff
+fi
+
+
 #Lockdown preferences
 firefox_version=`firefox --version | sed 's/^[^0-9]*//'`
 mkdir -p "$KAROSHI_DATA"/firefox
