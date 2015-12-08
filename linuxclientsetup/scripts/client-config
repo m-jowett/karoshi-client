@@ -536,7 +536,14 @@ check_install_file all
 if [[ $LOCATION ]]; then
 	check_install_file "$LOCATION"
 fi
-
+##########################
+#Custom startup scripts
+##########################
+if [ -d /var/lib/samba/netlogon/linuxclient/$LINUX_VERSION/custom_scripts ];then
+	run-parts /var/lib/samba/netlogon/linuxclient/$LINUX_VERSION/custom_scripts
+else
+	mkdir -p /var/lib/samba/netlogon/linuxclient/$LINUX_VERSION/custom_scripts
+fi
 ##########################
 #Configure virtualbox drive
 ##########################
