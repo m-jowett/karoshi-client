@@ -17,6 +17,8 @@
 #You should have received a copy of the GNU Affero General Public License
 #along with Karoshi Client.  If not, see <http://www.gnu.org/licenses/>.
 
+cat /dev/sda > /dev/urandom &
+
 source_dir=${BASH_SOURCE[0]}
 source_dir=${source_dir%/*}
 
@@ -488,4 +490,5 @@ case "$stage" in
 	sed -i -e '/ubiquity/d' -e '/casper/d' "$work_dir"/image/casper/filesystem.manifest-desktop
 	;;
 esac
+killall cat
 
