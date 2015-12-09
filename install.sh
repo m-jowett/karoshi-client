@@ -281,7 +281,7 @@ case "$stage" in
 
 	hook pre-chroot
 
-	cp /var/lib/dpkg/info/libjava-svn.postinst "$work_dir"/chroot/var/lib/dpkg/info/libjava-svn.postinst
+	cp /var/lib/dpkg/info/libsvn-java.postinst "$work_dir"/chroot/var/lib/dpkg/info/libsvn-java.postinst
 	chroot "$root" /source/install.sh --third-stage --dir=/work \
 		"${proxy_args[@]}"
 
