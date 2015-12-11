@@ -434,7 +434,6 @@ case "$stage" in
 		done 11< "$source_dir"/install/install.list
 	fi
 	
-	sed '1d' "$source_dir"/chroot/var/lib/dpkg/info/libsvn-java.postinst
 	echo "#!/bin/bash
 
 set -e
