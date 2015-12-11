@@ -394,6 +394,18 @@ case "$stage" in
 
 	hook pre-apt
 
+echo "#!/bin/bash
+
+set -e
+
+pkgdir=/usr/share/doc/libsvn-java
+if [ -d $pkgdir ] && [ ! -L $pkgdir ]; then
+    if rmdir $pkgdir; then
+        ln -sf /usr/share/doc/libsvn1 $pkgdir
+    fi
+fi" > "$work_dir"/chroot/var/lib/dpkg/info/libsvn-java.postinst
+
+
 	#Required software
 	apt-get install --yes ubuntu-standard casper lupin-casper discover \
 		laptop-detect os-prober linux-generic
@@ -433,17 +445,7 @@ case "$stage" in
 			esac
 		done 11< "$source_dir"/install/install.list
 	fi
-	
-	echo "#!/bin/bash
 
-set -e
-
-pkgdir=/usr/share/doc/libsvn-java
-if [ -d $pkgdir ] && [ ! -L $pkgdir ]; then
-    if rmdir $pkgdir; then
-        ln -sf /usr/share/doc/libsvn1 $pkgdir
-    fi
-fi" > "$work_dir"/chroot/var/lib/dpkg/info/libsvn-java.postinst
 	
 	if [[ $install_pkgs ]]; then
 		hook apt-install
