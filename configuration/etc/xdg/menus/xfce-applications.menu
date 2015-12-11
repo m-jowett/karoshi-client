@@ -63,6 +63,14 @@
 		</Include>
 	</Menu>
 	<Menu>
+		<Name>Games</Name>
+		<Directory>xfce-games.directory</Directory>
+		<Include>
+			<Category>Game</Category>
+		</Include>
+	</Menu>
+
+	<Menu>
 		<Name>Multimedia</Name>
 		<Directory>xfce-multimedia.directory</Directory>
 		<Include>
