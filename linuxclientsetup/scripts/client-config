@@ -505,6 +505,28 @@ if ! karoshi-manage-flags get no_update_printers >/dev/null; then
 	fi
 fi
 
+####################
+# Check drivers
+####################
+DRIVER=notset
+if [ $(lspci | grep VGA | grep -c AMD) -gt 0 ]
+then
+	DRIVER=fglrx
+fi
+if [ $(lspci | grep VGA | grep -c NVIDIA) -gt 0 ]
+then
+	DRIVER=nvidia-current
+fi
+if [ $DRIVER != notset ]
+then
+	#Detect if driver software installed
+	if [ $(dpkg -s $DRIVER | grep ^Status: | grep -c ok) = 0 ] 
+	then 
+		apt-get update
+		apt-get -y install $DRIVER
+	fi
+fi
+
 ############################
 #Software control
 ############################
