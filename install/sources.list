@@ -67,3 +67,5 @@ deb-src http://ppa.launchpad.net/xenopathic/ppa/ubuntu trusty main
 #!cmd apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 142986CE
 deb http://ppa.launchpad.net/xubuntu-dev/xfce-4.12/ubuntu trusty main
 deb-src http://ppa.launchpad.net/xubuntu-dev/xfce-4.12/ubuntu trusty main
+deb http://ppa.launchpad.net/gottcode/gcppa/ubuntu trusty main 
+deb-src http://ppa.launchpad.net/gottcode/gcppa/ubuntu trusty main 
